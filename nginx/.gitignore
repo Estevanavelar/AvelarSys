@@ -1,0 +1,5 @@
+# Chaves e certificados (não versionar)
+ssl/
+*.key
+*.pem
+*.crt

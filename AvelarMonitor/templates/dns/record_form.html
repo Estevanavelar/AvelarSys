@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Registro DNS{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ action }} Registro DNS</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <a href="{% url 'dns' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  turbozap:
+    build:
+      context: /home/avelarsys/AvelarSys/TurboZap
+      dockerfile: Dockerfile
+    container_name: turbozap
+    env_file:
+      - ../docker.env
+    environment:
+      - TZ=America/Sao_Paulo
+      - WPP_HOST=http://avelarsys-wpp:8003
+      - WPP_FALLBACK_HOSTS=http://avelarsys-wppconnect-2:8006,http://avelarsys-wppconnect-3:8005
+      - DATABASE_URL=sqlite:////tmp/turbozap.db
+      - CLEANUP_AFTER_FINISH=true
+      - MAX_MSG_PER_HOUR=50
+      - MAX_MSG_PER_SECOND=1
+      - DEFAULT_DELAY_MIN=5
+      - DEFAULT_DELAY_MAX=15
+    ports:
+      - "8007:8000"
+    volumes:
+      - /home/avelarsys/AvelarSys/TurboZap/data:/app/data:rw
+      - /home/avelarsys/AvelarSys/TurboZap/logs:/app/logs:rw
+    networks:
+      - avelarsys-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: turbozap-redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - avelarsys-network
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+
+networks:
+  avelarsys-network:
+    external: true

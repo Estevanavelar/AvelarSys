@@ -1,0 +1,35 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:João Silva
+N:Silva;João;;;
+TEL;TYPE=CELL:+55 11 99999-9999
+EMAIL:joao.silva@email.com
+ORG:Empresa XYZ
+TITLE:Desenvolvedor
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Maria Souza
+N:Souza;Maria;;;
+TEL;TYPE=CELL:+55 11 88888-8888
+EMAIL:maria.souza@email.com
+ORG:ABC Ltda
+TITLE:Gerente
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Pedro Santos
+N:Santos;Pedro;;;
+TEL;TYPE=CELL:+55 11 77777-7777
+EMAIL:pedro@email.com
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Ana Oliveira
+N:Oliveira;Ana;;;
+TEL;TYPE=CELL:+55 11 66666-6666
+ORG:Tech Solutions
+END:VCARD

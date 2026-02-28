@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app-portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: avelarsys-app-portal
+    command: npm run start
+    env_file:
+      - ../docker.env
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_AVADMIN_URL=https://avadmin.avelarcompany.com.br
+      - NEXT_PUBLIC_STOCKTECH_URL=https://stocktech.avelarcompany.com.br
+      - NEXT_PUBLIC_API_URL=https://app.avelarcompany.com.br
+      - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_PUBLIC_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_WS_URL=wss://stocktech.avelarcompany.com.br/ws
+    ports: ["3000:3000"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - avelarsys-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  avelarsys-network:
+    external: true

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Processos - Monitoramento{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Processos do Sistema</h1>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>PID</th>
+                    <th>Nome</th>
+                    <th>Usuário</th>
+                    <th>CPU %</th>
+                    <th>Memória %</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proc in processes %}
+                <tr>
+                    <td>{{ proc.pid }}</td>
+                    <td>{{ proc.name }}</td>
+                    <td>{{ proc.username|default:"-" }}</td>
+                    <td>{{ proc.cpu_percent|default:0|floatformat:2 }}</td>
+                    <td>{{ proc.memory_percent|default:0|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">Nenhum processo encontrado</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

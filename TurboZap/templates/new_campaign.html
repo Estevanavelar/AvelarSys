@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Campanha - TurboZap</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .header a { color: white; opacity: 0.9; text-decoration: none; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .form-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .hint {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover { background: #5a6fd6; }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        .btn-secondary:hover { background: #e5e7eb; }
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .template-vars {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+        .template-vars h4 {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+        .var-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-family: monospace;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .error {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/">← Voltar ao Dashboard</a>
+        <h1>⚡ TurboZap</h1>
+    </div>
+
+    <div class="container">
+        <div class="form-card">
+            <h2 style="margin-bottom: 1.5rem;">🚀 Nova Campanha</h2>
+            
+            <form id="campaignForm">
+                <div class="form-group">
+                    <label for="name">Nome da Campanha *</label>
+                    <input type="text" id="name" name="name" required 
+                           placeholder="Ex: Promoção Janeiro 2024" maxlength="100">
+                    <div class="hint">Dê um nome descritivo para identificar esta campanha</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="message_template">Mensagem *</label>
+                    <textarea id="message_template" name="message_template" required
+                              placeholder="Digite sua mensagem aqui..."></textarea>
+                    <div class="hint">
+                        Use {nome}, {empresa} ou outras variáveis entre chaves. 
+                        Elas serão substituídas pelos dados do CSV.
+                    </div>
+                    
+                    <!-- Spintax Section -->
+                    <div class="spintax-section" style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 1rem; margin-top: 1rem;">
+                        <h4 style="color: #92400e; margin-bottom: 0.5rem; font-size: 0.875rem;">✨ Spintax - Variação de Mensagens (Anti-Ban)</h4>
+                        <p style="font-size: 0.8rem; color: #78350f; margin-bottom: 0.5rem;">
+                            Use chaves <code>{ }</code> para criar variações. Cada contato receberá uma versão diferente!
+                        </p>
+                        <div style="font-size: 0.75rem; color: #92400e; margin-bottom: 0.75rem;">
+                            <strong>Exemplo:</strong> <code>{Oi|Olá|E aí} {tudo bem|como vai}? Sou da {Avelar|Avelar Company}.</code>
+                        </div>
+                        <button type="button" onclick="previewSpintax()" class="btn" style="background: #f59e0b; color: white; font-size: 0.875rem; padding: 0.5rem 1rem;">
+                            👁️ Ver 3 Variações
+                        </button>
+                        <div id="spintax-preview" style="display: none; margin-top: 0.75rem; padding: 0.75rem; background: white; border-radius: 4px;">
+                            <h5 style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.5rem;">Exemplos de variações:</h5>
+                            <div id="spintax-variations"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="template-vars">
+                        <h4>Variáveis disponíveis (exemplos):</h4>
+                        <span class="var-tag">{nome}</span>
+                        <span class="var-tag">{telefone}</span>
+                        <span class="var-tag">{empresa}</span>
+                        <span class="var-tag">{cidade}</span>
+                        Clique para inserir
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="delay_min">Delay Mínimo (segundos)</label>
+                        <input type="number" id="delay_min" name="delay_min" 
+                               value="5" min="1" max="300">
+                        <div class="hint">Mínimo: 1 segundo</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="delay_max">Delay Máximo (segundos)</label>
+                        <input type="number" id="delay_max" name="delay_max" 
+                               value="15" min="1" max="300">
+                        <div class="hint">Máximo: 300 segundos</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="max_per_hour">Limite por Hora</label>
+                    <input type="number" id="max_per_hour" name="max_per_hour" 
+                           value="50" min="1" max="500">
+                    <div class="hint">Máximo de mensagens por hora (recomendado: 30-50)</div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        Criar Campanha →
+                    </button>
+                    <a href="/" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Inserir variáveis no textarea
+        document.querySelectorAll('.var-tag').forEach(tag => {
+            tag.style.cursor = 'pointer';
+            tag.addEventListener('click', () => {
+                const textarea = document.getElementById('message_template');
+                const varName = tag.textContent;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const text = textarea.value;
+                textarea.value = text.substring(0, start) + varName + text.substring(end);
+                textarea.focus();
+                textarea.setSelectionRange(start + varName.length, start + varName.length);
+            });
+        });
+
+        // Função para processar spintax e gerar variações
+        function parseSpintax(text) {
+            // Processa variáveis primeiro
+            const vars = {
+                'nome': 'João',
+                'empresa': 'Avelar',
+                'telefone': '5511999999999',
+                'cidade': 'São Paulo'
+            };
+            
+            let result = text;
+            for (const [key, value] of Object.entries(vars)) {
+                const regex = new RegExp(`\\{${key}\\}`, 'gi');
+                result = result.replace(regex, value);
+            }
+            
+            // Processa chaves spintax
+            function process(text) {
+                const pattern = /\{([^{}]+)\}/;
+                let match = text.match(pattern);
+                
+                while (match) {
+                    const options = match[1].split('|');
+                    const chosen = options[Math.floor(Math.random() * options.length)].trim();
+                    text = text.substring(0, match.index) + chosen + text.substring(match.index + match[0].length);
+                    match = text.match(pattern);
+                }
+                
+                return text;
+            }
+            
+            return process(result);
+        }
+        
+        // Preview de spintax
+        function previewSpintax() {
+            const message = document.getElementById('message_template').value;
+            if (!message.trim()) {
+                alert('Digite uma mensagem primeiro!');
+                return;
+            }
+            
+            const previewDiv = document.getElementById('spintax-preview');
+            const variationsDiv = document.getElementById('spintax-variations');
+            
+            // Gerar 3 variações
+            let variations = [];
+            for (let i = 0; i < 3; i++) {
+                variations.push(parseSpintax(message));
+            }
+            
+            // Renderizar
+            variationsDiv.innerHTML = variations.map((v, i) => `
+                <div style="padding: 0.5rem; background: #f3f4f6; border-radius: 4px; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                    <strong style="color: #6b7280;">#${i + 1}:</strong> ${v}
+                </div>
+            `).join('');
+            
+            previewDiv.style.display = 'block';
+        }
+
+        // Validar delays
+        document.getElementById('campaignForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const delayMin = parseInt(document.getElementById('delay_min').value);
+            const delayMax = parseInt(document.getElementById('delay_max').value);
+            
+            if (delayMin >= delayMax) {
+                alert('O delay máximo deve ser maior que o delay mínimo!');
+                return;
+            }
+
+            const formData = {
+                name: document.getElementById('name').value,
+                message_template: document.getElementById('message_template').value,
+                delay_min: delayMin,
+                delay_max: delayMax,
+                max_per_hour: parseInt(document.getElementById('max_per_hour').value)
+            };
+
+            try {
+                const response = await fetch('/api/campaigns', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Redirecionar para página de upload
+                    window.location.href = `/campaigns/${data.id}`;
+                } else {
+                    const error = await response.json();
+                    alert('Erro: ' + (error.detail || 'Erro ao criar campanha'));
+                }
+            } catch (error) {
+                alert('Erro ao criar campanha: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

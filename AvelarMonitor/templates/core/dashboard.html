@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Painel de Controle{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Dashboard</h1>
+
+<div class="row">
+    <!-- CPU Card -->
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-cpu"></i> CPU</h5>
+                <h2 class="text-primary">{{ cpu_percent }}%</h2>
+                <p class="text-muted small">Uso atual</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Memory Card -->
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-memory"></i> Memória</h5>
+                <h2 class="text-info">{{ memory_percent|floatformat:1 }}%</h2>
+                <p class="text-muted small">{{ memory_used|floatformat:2 }} GB / {{ memory_total|floatformat:2 }} GB</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Disk Card -->
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-hdd"></i> Disco</h5>
+                <h2 class="text-warning">{{ disk_percent }}%</h2>
+                <p class="text-muted small">{{ disk_used|floatformat:2 }} GB / {{ disk_total|floatformat:2 }} GB</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Docker Card -->
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-box"></i> Docker</h5>
+                <h2 class="text-success">{{ docker_running }} / {{ docker_containers }}</h2>
+                <p class="text-muted small">Containers rodando</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Ações Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'monitoring' %}" class="btn btn-primary me-2">
+                    <i class="bi bi-graph-up"></i> Ver Monitoramento
+                </a>
+                <a href="{% url 'docker' %}" class="btn btn-success me-2">
+                    <i class="bi bi-box"></i> Gerenciar Docker
+                </a>
+                <a href="{% url 'files' %}" class="btn btn-info me-2">
+                    <i class="bi bi-folder"></i> Gerenciar Arquivos
+                </a>
+                <a href="{% url 'dns' %}" class="btn btn-warning me-2">
+                    <i class="bi bi-globe"></i> Gerenciar DNS
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

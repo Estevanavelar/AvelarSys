@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ file_info.name }} - Arquivo{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ file_info.name }}</h1>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p><strong>Caminho:</strong> {{ file_info.path }}</p>
+        <p><strong>Tamanho:</strong> {{ file_info.size|filesizeformat }}</p>
+        <p><strong>Modificado:</strong> {{ file_info.modified|date:"d/m/Y H:i" }}</p>
+        <p><strong>Permissões:</strong> {{ file_info.permissions }}</p>
+    </div>
+</div>
+
+{% if editable %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Editor</h5>
+        <button class="btn btn-primary btn-sm" onclick="saveFile()">Salvar</button>
+    </div>
+    <div class="card-body">
+        <textarea id="fileContent" class="form-control" rows="20" style="font-family: monospace;">{{ content }}</textarea>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <p class="text-muted">Este arquivo não pode ser editado através do painel.</p>
+        <a href="{% url 'file_download' rel_path %}" class="btn btn-primary">Download</a>
+    </div>
+</div>
+{% endif %}
+
+<a href="{% url 'files' %}" class="btn btn-secondary mt-3">Voltar</a>
+{% endblock %}
+
+{% block extra_js %}
+{% if editable %}
+<script>
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#1f2937;color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;z-index:9999;opacity:0;transition:opacity .2s';
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.style.opacity = '1');
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 5000);
+}
+
+function saveFile() {
+    const content = document.getElementById('fileContent').value;
+    fetch('{% url "file_save" rel_path %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'content=' + encodeURIComponent(content)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Arquivo salvo com sucesso!');
+        } else {
+            showToast('Erro: ' + data.error);
+        }
+    });
+}
+</script>
+{% endif %}
+{% endblock %}
+

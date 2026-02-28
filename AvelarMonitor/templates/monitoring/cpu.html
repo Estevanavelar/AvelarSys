@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}CPU - Monitoramento{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Monitoramento de CPU</h1>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5>Informações da CPU</h5>
+        <p><strong>Núcleos:</strong> {{ cpu_info.count }}</p>
+        <p><strong>Uso Atual:</strong> {{ cpu_info.percent }}%</p>
+        {% if cpu_info.freq.current %}
+        <p><strong>Frequência:</strong> {{ cpu_info.freq.current|floatformat:0 }} MHz</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Uso por Núcleo</h5>
+    </div>
+    <div class="card-body">
+        <canvas id="cpuPerCoreChart"></canvas>
+    </div>
+</div>
+
+<a href="{% url 'monitoring' %}" class="btn btn-secondary mt-3">Voltar</a>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ctx = document.getElementById('cpuPerCoreChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ cpu_info.per_cpu|safe }},
+        datasets: [{
+            label: 'CPU % por Núcleo',
+            data: {{ cpu_info.per_cpu|safe }},
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
+

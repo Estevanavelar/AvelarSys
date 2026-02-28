@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline - AvelarSys</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .offline-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        padding: 40px;
+        max-width: 500px;
+        text-align: center;
+      }
+
+      .offline-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 28px;
+      }
+
+      p {
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+
+      .offline-tips {
+        background: #f5f5f5;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: left;
+        border-radius: 4px;
+      }
+
+      .offline-tips h3 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      .offline-tips ul {
+        list-style: none;
+        padding-left: 0;
+      }
+
+      .offline-tips li {
+        color: #666;
+        margin: 8px 0;
+        padding-left: 20px;
+        position: relative;
+      }
+
+      .offline-tips li:before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: #667eea;
+        font-weight: bold;
+      }
+
+      button {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background: #764ba2;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="offline-container">
+      <div class="offline-icon">📡</div>
+      <h1>Sem Conexão</h1>
+      <p>Parece que você está offline. Confira sua conexão e tente novamente.</p>
+
+      <div class="offline-tips">
+        <h3>Dicas:</h3>
+        <ul>
+          <li>Verifique Wi-Fi ou dados móveis</li>
+          <li>Reinicie seu navegador</li>
+          <li>Tente novamente em alguns momentos</li>
+          <li>Alguns dados podem estar em cache</li>
+        </ul>
+      </div>
+
+      <button onclick="window.location.href='https://app.avelarcompany.com.br'">🔄 Tentar Novamente</button>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+# ========================================
+# TurboZap Configuration
+# ========================================
+
+# Rate Limiting
+rate_limits:
+  max_per_hour: 50
+  max_per_second: 1
+  burst_limit: 5
+
+# Delay entre mensagens (segundos)
+delay:
+  min: 5
+  max: 15
+  random: true  # Delay aleatório entre min e max
+
+# Retry
+retry:
+  max_attempts: 3
+  delay_between: 30  # segundos
+
+# Smart Delay - Delay humanizado com pausas
+smart_delay:
+  message_delay_min: 15        # Delay mínimo entre mensagens (segundos)
+  message_delay_max: 45        # Delay máximo entre mensagens (segundos)
+  short_break_every: [8, 12]   # Pausa curta a cada 8-12 mensagens
+  short_break_duration: [120, 300]  # Duração da pausa curta: 2-5 minutos
+  long_break_every: [30, 50]   # Pausa longa a cada 30-50 mensagens
+  long_break_duration: [600, 1200]  # Duração da pausa longa: 10-20 minutos
+  business_hours_start: 8      # Início do horário comercial (8h)
+  business_hours_end: 20       # Fim do horário comercial (20h)
+  respect_business_hours: true # Respeitar horário comercial
+  message_length_factor: 0.05  # Segundos extras por caractere da mensagem
+
+# WPPConnect
+wppconnect:
+  hosts:
+    - http://avelarsys-wpp:8003
+    - http://avelarsys-wppconnect-2:8006
+    - http://avelarsys-wppconnect-3:8005
+  timeout: 30
+  health_check_interval: 60
+
+# Database
+database:
+  url: sqlite:///app/data/turbozap.db
+  cleanup_after_finish: true  # Apagar DB após concluir todos os envios
+  cleanup_interval_hours: 24  # Limpar envios antigos
+
+# Uploads
+upload:
+  max_file_size: 10MB
+  allowed_extensions: ['csv', 'txt']
+  default_encoding: utf-8
+
+# Logging
+logging:
+  level: INFO
+  format: json
+  retention_days: 7
+
+# Segurança
+security:
+  api_key_header: X-API-Key
+  max_upload_size: 10485760  # 10MB

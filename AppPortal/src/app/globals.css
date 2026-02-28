@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Tema Claro - Avelar High Contrast White */
+  --background: #ffffff;
+  --foreground: #09090b;
+  --card: rgba(244, 244, 245, 0.8);
+  --card-border: rgba(0, 0, 0, 0.08);
+  --accent: #18181b;
+  --muted: #71717a;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --selection: rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  /* Tema Escuro - Avelar OLED Black */
+  --background: #000000;
+  --foreground: #fafafa;
+  --card: rgba(9, 9, 11, 0.7);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --accent: #ffffff;
+  --muted: #a1a1aa;
+  --glass-bg: rgba(0, 0, 0, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --selection: rgba(255, 255, 255, 0.2);
+}
+
+@layer base {
+  * {
+    @apply border-[var(--card-border)] selection:bg-[var(--selection)];
+    /* Ocultar barra de rolagem globalmente (Estilo App Nativo) */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  /* Ocultar barra de rolagem para Chrome, Safari e Opera */
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+  }
+
+@layer components {
+  /* Efeito Vidro Apple (Glassmorphism) */
+  .glass {
+    @apply backdrop-blur-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-2xl;
+}
+
+  /* Card Assinatura Avelar */
+  .avelar-card {
+    @apply glass rounded-[2.5rem] p-8 transition-all duration-700 
+           hover:scale-[1.02] hover:shadow-xl;
+  }
+
+  /* Botões Master - Estilo iPhone */
+  .btn-avelar {
+    @apply px-8 py-4 rounded-2xl font-bold uppercase tracking-tighter transition-all duration-300 
+           flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  /* Botão Principal (Preto no Claro, Branco no Escuro) */
+  .btn-primary {
+    @apply btn-avelar bg-[var(--accent)] text-[var(--background)] 
+           hover:shadow-[0_10px_30px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_10px_30px_rgba(255,255,255,0.1)];
+  }
+
+  /* Botão de Vidro Transparente */
+  .btn-glass {
+    @apply btn-avelar glass text-[var(--foreground)] hover:bg-[var(--glass-bg)];
+  }
+
+  /* Botão de Alerta/Sair */
+  .btn-danger {
+    @apply btn-avelar bg-red-500/10 text-red-500 border border-red-500/20 
+           hover:bg-red-500 hover:text-white hover:shadow-[0_10px_30px_rgba(239,68,68,0.2)];
+}
+
+  /* Navegação Segmented Control iOS */
+  .nav-pill {
+    @apply flex gap-1 p-1.5 bg-[var(--card)] rounded-[2rem] border border-[var(--card-border)] backdrop-blur-md shadow-inner;
+  }
+
+  .nav-pill-item {
+    @apply px-6 py-2.5 rounded-[1.5rem] text-sm font-bold transition-all duration-500;
+}
+
+  .nav-pill-item-active {
+    @apply bg-black/10 dark:bg-white/10 text-[var(--foreground)] shadow-lg scale-100 backdrop-blur-sm;
+  }
+
+  .nav-pill-item-inactive {
+    @apply text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-white/5 scale-95;
+  }
+
+  /* Inputs Modernos Avelar */
+  .avelar-input {
+    @apply bg-[var(--background)] border-2 border-[var(--card-border)] rounded-2xl px-6 py-4 
+           text-[var(--foreground)] font-medium outline-none transition-all duration-300
+           focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--selection)];
+  }
+
+  /* Botão Secundário */
+  .btn-secondary {
+    @apply btn-avelar bg-transparent border-2 border-[var(--card-border)] text-[var(--foreground)]
+           hover:bg-[var(--card)] hover:border-[var(--accent)];
+  }
+}
+
+/* Blobs de Fundo Animados */
+.avelar-blob {
+  @apply fixed rounded-full blur-[120px] animate-pulse opacity-20 pointer-events-none z-[-1];
+}

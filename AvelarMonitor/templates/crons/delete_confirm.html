@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Deletar Trabalho{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Confirmar Exclusão</h1>
+
+<div class="card">
+    <div class="card-body">
+        <p>Tem certeza que deseja deletar o trabalho <strong>"{{ task.name }}"</strong>?</p>
+        <p class="text-muted">Esta ação não pode ser desfeita.</p>
+        
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Sim, Deletar
+            </button>
+            <a href="{% url 'crons' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

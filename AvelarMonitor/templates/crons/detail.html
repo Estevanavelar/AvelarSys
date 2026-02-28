@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ task.name }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ task.name }}</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Informações do Trabalho</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th width="200">Tipo:</th>
+                        <td>{{ task.get_task_type_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge bg-{% if task.status == 'completed' %}success{% elif task.status == 'failed' %}danger{% elif task.status == 'running' %}warning{% elif task.status == 'scheduled' %}info{% else %}secondary{% endif %}">
+                                {{ task.get_status_display }}
+                            </span>
+                            {% if not task.is_active %}
+                                <span class="badge bg-secondary">Inativo</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Descrição:</th>
+                        <td>{{ task.description|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Data/Hora Agendada:</th>
+                        <td>{{ task.scheduled_date|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Recorrência:</th>
+                        <td>{{ task.get_recurrence_display }}</td>
+                    </tr>
+                    {% if task.cron_expression %}
+                    <tr>
+                        <th>Expressão Cron:</th>
+                        <td><code>{{ task.cron_expression }}</code></td>
+                    </tr>
+                    {% endif %}
+                    {% if task.container_name %}
+                    <tr>
+                        <th>Container:</th>
+                        <td><code>{{ task.container_name }}</code></td>
+                    </tr>
+                    {% endif %}
+                    {% if task.custom_command %}
+                    <tr>
+                        <th>Comando:</th>
+                        <td><code>{{ task.custom_command }}</code></td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <th>Última Execução:</th>
+                        <td>{{ task.last_run|date:"d/m/Y H:i"|default:"Nunca" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Próxima Execução:</th>
+                        <td>{{ task.next_run|date:"d/m/Y H:i"|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Número de Execuções:</th>
+                        <td>{{ task.run_count }}</td>
+                    </tr>
+                    {% if task.last_result %}
+                    <tr>
+                        <th>Último Resultado:</th>
+                        <td>{{ task.last_result }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Histórico de Execuções</h5>
+            </div>
+            <div class="card-body">
+                {% if executions %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Status</th>
+                                <th>Duração</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for execution in executions %}
+                            <tr>
+                                <td>{{ execution.started_at|date:"d/m/Y H:i:s" }}</td>
+                                <td>
+                                    <span class="badge bg-{% if execution.status == 'completed' %}success{% elif execution.status == 'failed' %}danger{% elif execution.status == 'running' %}warning{% else %}secondary{% endif %}">
+                                        {{ execution.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if execution.duration_seconds %}
+                                        {{ execution.duration_seconds|floatformat:2 }}s
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if execution.output or execution.error_message %}
+                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#executionModal{{ execution.id }}">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            
+                            <!-- Modal para detalhes da execução -->
+                            {% if execution.output or execution.error_message %}
+                            <div class="modal fade" id="executionModal{{ execution.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Detalhes da Execução</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            {% if execution.error_message %}
+                                            <div class="alert alert-danger">
+                                                <strong>Erro:</strong><br>
+                                                <pre>{{ execution.error_message }}</pre>
+                                            </div>
+                                            {% endif %}
+                                            {% if execution.output %}
+                                            <div>
+                                                <strong>Saída:</strong><br>
+                                                <pre class="bg-light p-3">{{ execution.output }}</pre>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Nenhuma execução registrada ainda.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Ações</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'task_edit' task.id %}" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <form method="post" action="{% url 'task_toggle_active' task.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-{% if task.is_active %}secondary{% else %}success{% endif %} w-100">
+                            <i class="bi bi-{% if task.is_active %}pause{% else %}play{% endif %}"></i>
+                            {% if task.is_active %}Desativar{% else %}Ativar{% endif %}
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'task_run_now' task.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-play-fill"></i> Executar Agora
+                        </button>
+                    </form>
+                    <a href="{% url 'task_delete' task.id %}" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Deletar
+                    </a>
+                    <a href="{% url 'crons' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

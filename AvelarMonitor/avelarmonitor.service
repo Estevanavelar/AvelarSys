@@ -1,0 +1,37 @@
+[Unit]
+Description=AvelarMonitor - Painel de Controle Django
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment=PATH=/home/avelarsys/AvelarMonitor/venv/bin:/usr/bin:/bin
+Environment=PYTHONPATH=/home/avelarsys/AvelarMonitor
+Environment=DJANGO_SETTINGS_MODULE=painel_control.settings
+ExecStart=/home/avelarsys/AvelarMonitor/venv/bin/python /home/avelarsys/AvelarMonitor/manage.py runserver 0.0.0.0:8000
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Configurações de reinício automático
+Restart=always
+RestartSec=10
+StartLimitBurst=5
+
+# Configurações de segurança
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=/home/avelarsys/AvelarMonitor
+ProtectHome=yes
+
+# Configurações de logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=avelarmonitor
+
+# Timeout para inicialização
+TimeoutStartSec=60
+
+[Install]
+WantedBy=multi-user.target

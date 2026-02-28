@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Deletar Domínio{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirmar Exclusão</h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">Tem certeza que deseja deletar o domínio <strong>{{ domain.name }}</strong>?</p>
+                <p class="text-muted">
+                    Esta ação irá deletar:
+                    <ul>
+                        <li>O domínio e todos os seus registros DNS</li>
+                        <li>O histórico de alterações relacionado</li>
+                    </ul>
+                    <strong class="text-danger">Esta ação não pode ser desfeita!</strong>
+                </p>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Sim, Deletar
+                        </button>
+                        <a href="{% url 'dns' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

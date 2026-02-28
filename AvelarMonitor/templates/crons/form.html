@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{{ title }}</h1>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="text-danger">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.task_type.id_for_label }}" class="form-label">{{ form.task_type.label }}</label>
+                    {{ form.task_type }}
+                    {% if form.task_type.errors %}
+                        <div class="text-danger">{{ form.task_type.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <div class="text-danger">{{ form.description.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.scheduled_date.id_for_label }}" class="form-label">{{ form.scheduled_date.label }}</label>
+                    {{ form.scheduled_date }}
+                    {% if form.scheduled_date.errors %}
+                        <div class="text-danger">{{ form.scheduled_date.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.recurrence.id_for_label }}" class="form-label">{{ form.recurrence.label }}</label>
+                    {{ form.recurrence }}
+                    {% if form.recurrence.errors %}
+                        <div class="text-danger">{{ form.recurrence.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-3" id="cron-expression-group" style="display: none;">
+                <label for="{{ form.cron_expression.id_for_label }}" class="form-label">{{ form.cron_expression.label }}</label>
+                {{ form.cron_expression }}
+                {% if form.cron_expression.errors %}
+                    <div class="text-danger">{{ form.cron_expression.errors }}</div>
+                {% endif %}
+                <small class="form-text text-muted">Formato: minuto hora dia mês dia-da-semana (ex: 0 2 * * * = diariamente às 2h)</small>
+            </div>
+            
+            <div class="mb-3" id="container-name-group" style="display: none;">
+                <label for="{{ form.container_name.id_for_label }}" class="form-label">{{ form.container_name.label }}</label>
+                {{ form.container_name }}
+                {% if form.container_name.errors %}
+                    <div class="text-danger">{{ form.container_name.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3" id="custom-command-group" style="display: none;">
+                <label for="{{ form.custom_command.id_for_label }}" class="form-label">{{ form.custom_command.label }}</label>
+                {{ form.custom_command }}
+                {% if form.custom_command.errors %}
+                    <div class="text-danger">{{ form.custom_command.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                <div class="form-check">
+                    {{ form.is_active }}
+                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                        {{ form.is_active.label }}
+                    </label>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Salvar
+                </button>
+                <a href="{% url 'crons' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const taskTypeSelect = document.getElementById('id_task_type');
+    const recurrenceSelect = document.getElementById('id_recurrence');
+    const containerNameGroup = document.getElementById('container-name-group');
+    const customCommandGroup = document.getElementById('custom-command-group');
+    const cronExpressionGroup = document.getElementById('cron-expression-group');
+    
+    function updateFormFields() {
+        const taskType = taskTypeSelect.value;
+        const recurrence = recurrenceSelect.value;
+        
+        // Mostrar/ocultar campos baseado no tipo de tarefa
+        if (taskType === 'restart_container') {
+            containerNameGroup.style.display = 'block';
+        } else {
+            containerNameGroup.style.display = 'none';
+        }
+        
+        if (taskType === 'custom_command') {
+            customCommandGroup.style.display = 'block';
+        } else {
+            customCommandGroup.style.display = 'none';
+        }
+        
+        // Mostrar/ocultar expressão cron
+        if (recurrence === 'custom') {
+            cronExpressionGroup.style.display = 'block';
+        } else {
+            cronExpressionGroup.style.display = 'none';
+        }
+    }
+    
+    taskTypeSelect.addEventListener('change', updateFormFields);
+    recurrenceSelect.addEventListener('change', updateFormFields);
+    updateFormFields(); // Executar na carga inicial
+});
+</script>
+{% endblock %}
+

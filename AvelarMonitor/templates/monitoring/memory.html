@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Memória - Monitoramento{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Monitoramento de Memória</h1>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5>Memória RAM</h5>
+                <p><strong>Total:</strong> {{ memory_info.total|floatformat:2 }} GB</p>
+                <p><strong>Usado:</strong> {{ memory_info.used|floatformat:2 }} GB</p>
+                <p><strong>Disponível:</strong> {{ memory_info.available|floatformat:2 }} GB</p>
+                <p><strong>Uso:</strong> {{ memory_info.percent }}%</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5>Swap</h5>
+                <p><strong>Total:</strong> {{ memory_info.swap.total|floatformat:2 }} GB</p>
+                <p><strong>Usado:</strong> {{ memory_info.swap.used|floatformat:2 }} GB</p>
+                <p><strong>Livre:</strong> {{ memory_info.swap.free|floatformat:2 }} GB</p>
+                <p><strong>Uso:</strong> {{ memory_info.swap.percent }}%</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="{% url 'monitoring' %}" class="btn btn-secondary">Voltar</a>
+{% endblock %}
+

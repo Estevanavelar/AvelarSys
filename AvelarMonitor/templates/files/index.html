@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciador de Arquivos{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Gerenciador de Arquivos</h1>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    {% if is_root %}
+                        <li class="breadcrumb-item active">Raiz do Sistema (/)</li>
+                    {% else %}
+                        <li class="breadcrumb-item"><a href="{% url 'files' %}">Raiz</a></li>
+                        {% for part_name, part_path in breadcrumb_parts %}
+                            {% if forloop.last %}
+                                <li class="breadcrumb-item active">{{ part_name }}</li>
+                            {% else %}
+                                {% if part_path|slice:':5' == 'root:' %}
+                                    <li class="breadcrumb-item"><a href="/files/{{ part_path }}/">{{ part_name }}</a></li>
+                                {% else %}
+                                    <li class="breadcrumb-item"><a href="/files/{{ part_path }}/">{{ part_name }}</a></li>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </ol>
+            </nav>
+            <div>
+                {% if not is_read_only %}
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="bi bi-upload"></i> Upload
+                </button>
+                <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#createFileModal">
+                    <i class="bi bi-file-plus"></i> Novo Arquivo
+                </button>
+                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#createDirModal">
+                    <i class="bi bi-folder-plus"></i> Nova Pasta
+                </button>
+                {% else %}
+                <span class="badge bg-warning text-dark">
+                    <i class="bi bi-lock"></i> Apenas Leitura
+                </span>
+                {% endif %}
+                {% if not is_root %}
+                <a href="/files/root:/" class="btn btn-secondary btn-sm ms-2">
+                    <i class="bi bi-house-door"></i> Ir para Raiz (/)
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Tamanho</th>
+                    <th>Modificado</th>
+                    <th>Permissões</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>
+                        {% if item.is_dir %}
+                            <i class="bi bi-folder-fill text-warning"></i>
+                            {% if is_root %}
+                                <a href="/files/root:{{ item.name }}/">{{ item.name }}</a>
+                            {% elif rel_path|slice:':5' == 'root:' %}
+                                <a href="/files/{{ rel_path }}/{{ item.name }}/">{{ item.name }}</a>
+                            {% elif rel_path %}
+                                <a href="/files/{{ rel_path }}/{{ item.name }}/">{{ item.name }}</a>
+                            {% else %}
+                                <a href="/files/{{ item.name }}/">{{ item.name }}</a>
+                            {% endif %}
+                        {% else %}
+                            <i class="bi bi-file-text"></i>
+                            {% if is_root %}
+                                <a href="/files/file/root:{{ item.name }}/">{{ item.name }}</a>
+                            {% elif rel_path|slice:':5' == 'root:' %}
+                                <a href="/files/file/{{ rel_path }}/{{ item.name }}/">{{ item.name }}</a>
+                            {% elif rel_path %}
+                                <a href="/files/file/{{ rel_path }}/{{ item.name }}/">{{ item.name }}</a>
+                            {% else %}
+                                <a href="/files/file/{{ item.name }}/">{{ item.name }}</a>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.is_dir %}
+                            {{ item.size|filesizeformat }} ({{ item.items_count }} itens)
+                        {% else %}
+                            {{ item.size|filesizeformat }}
+                        {% endif %}
+                    </td>
+                    <td>{{ item.modified|date:"d/m/Y H:i" }}</td>
+                    <td>{{ item.permissions }}</td>
+                    <td>
+                        {% if not item.is_dir %}
+                            {% if rel_path %}
+                                <a href="{% url 'file_download' rel_path|add:'/'|add:item.name %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'file_download' item.name %}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                        {% if not item.is_read_only %}
+                        <button class="btn btn-sm btn-danger" onclick="deleteItem('{% if rel_path %}{{ rel_path }}/{% endif %}{{ item.name }}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        {% else %}
+                        <span class="badge bg-secondary">Somente Leitura</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">Diretório vazio</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modals -->
+{% include 'files/modals.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let confirmCallback = null;
+
+function ensureConfirmModal() {
+    if (document.getElementById('confirm-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'confirm-modal';
+    modal.style.cssText = 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:9999;';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:12px;max-width:420px;width:90%;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.2)">
+        <h5 style="margin:0 0 8px 0">Confirmar ação</h5>
+        <p id="confirm-message" style="margin:0 0 16px 0;color:#555"></p>
+        <div style="display:flex;justify-content:flex-end;gap:8px">
+          <button id="confirm-cancel" class="btn btn-secondary btn-sm">Cancelar</button>
+          <button id="confirm-ok" class="btn btn-primary btn-sm">Confirmar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('confirm-cancel').onclick = () => closeConfirm(false);
+    document.getElementById('confirm-ok').onclick = () => closeConfirm(true);
+}
+
+function showConfirm(message, onConfirm) {
+    ensureConfirmModal();
+    confirmCallback = onConfirm;
+    document.getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-modal').style.display = 'flex';
+}
+
+function closeConfirm(confirmed) {
+    document.getElementById('confirm-modal').style.display = 'none';
+    if (confirmed && typeof confirmCallback === 'function') {
+        confirmCallback();
+    }
+    confirmCallback = null;
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#1f2937;color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;z-index:9999;opacity:0;transition:opacity .2s';
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.style.opacity = '1');
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 5000);
+}
+
+function deleteItem(path) {
+    showConfirm('Tem certeza que deseja deletar este item?', () => {
+        fetch('{% url "file_delete" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'path=' + encodeURIComponent(path)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                showToast('Erro: ' + data.error);
+            }
+        });
+    });
+}
+</script>
+{% endblock %}
+

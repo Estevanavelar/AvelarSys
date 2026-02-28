@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}Monitoramento - Painel de Controle{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Monitoramento do Sistema</h1>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">CPU</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="cpuChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Memória</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="memoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Disco</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="diskChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Métricas em Tempo Real</h5>
+                <span class="badge bg-success" id="statusBadge">Conectado</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>CPU:</strong> <span id="cpuValue">-</span>%
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Memória:</strong> <span id="memoryValue">-</span>%
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Disco:</strong> <span id="diskValue">-</span>%
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Rede:</strong> <span id="networkValue">-</span> MB
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{% url 'monitoring_cpu' %}" class="btn btn-primary me-2">Detalhes CPU</a>
+    <a href="{% url 'monitoring_memory' %}" class="btn btn-info me-2">Detalhes Memória</a>
+    <a href="{% url 'monitoring_disk' %}" class="btn btn-warning me-2">Detalhes Disco</a>
+    <a href="{% url 'monitoring_processes' %}" class="btn btn-secondary">Processos</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let cpuChart, memoryChart, diskChart;
+    let cpuData = [], memoryData = [], diskData = [];
+    const maxDataPoints = 20;
+
+    // Inicializar gráficos
+    const cpuCtx = document.getElementById('cpuChart').getContext('2d');
+    cpuChart = new Chart(cpuCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'CPU %',
+                data: [],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    const memoryCtx = document.getElementById('memoryChart').getContext('2d');
+    memoryChart = new Chart(memoryCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Memória %',
+                data: [],
+                borderColor: 'rgb(54, 162, 235)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    const diskCtx = document.getElementById('diskChart').getContext('2d');
+    diskChart = new Chart(diskCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Disco %',
+                data: [],
+                borderColor: 'rgb(255, 206, 86)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // Atualizar métricas
+    function updateMetrics() {
+        fetch('{% url "metrics_api" %}')
+            .then(response => response.json())
+            .then(data => {
+                const now = new Date().toLocaleTimeString();
+                
+                // CPU
+                cpuData.push(data.cpu.percent);
+                if (cpuData.length > maxDataPoints) cpuData.shift();
+                cpuChart.data.labels.push(now);
+                if (cpuChart.data.labels.length > maxDataPoints) cpuChart.data.labels.shift();
+                cpuChart.data.datasets[0].data = cpuData;
+                cpuChart.update();
+                document.getElementById('cpuValue').textContent = data.cpu.percent.toFixed(1);
+                
+                // Memória
+                memoryData.push(data.memory.percent);
+                if (memoryData.length > maxDataPoints) memoryData.shift();
+                memoryChart.data.datasets[0].data = memoryData;
+                memoryChart.update();
+                document.getElementById('memoryValue').textContent = data.memory.percent.toFixed(1);
+                
+                // Disco
+                diskData.push(data.disk.percent);
+                if (diskData.length > maxDataPoints) diskData.shift();
+                diskChart.data.datasets[0].data = diskData;
+                diskChart.update();
+                document.getElementById('diskValue').textContent = data.disk.percent.toFixed(1);
+                
+                // Rede
+                const networkTotal = data.network.bytes_sent + data.network.bytes_recv;
+                document.getElementById('networkValue').textContent = networkTotal.toFixed(2);
+                
+                document.getElementById('statusBadge').textContent = 'Conectado';
+                document.getElementById('statusBadge').className = 'badge bg-success';
+            })
+            .catch(error => {
+                document.getElementById('statusBadge').textContent = 'Desconectado';
+                document.getElementById('statusBadge').className = 'badge bg-danger';
+            });
+    }
+
+    // Atualizar a cada 2 segundos
+    setInterval(updateMetrics, 2000);
+    updateMetrics();
+</script>
+{% endblock %}
+

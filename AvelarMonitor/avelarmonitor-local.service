@@ -1,0 +1,16 @@
+[Unit]
+Description=AvelarMonitor - Django ASGI Server
+After=network.target redis.service
+
+[Service]
+Type=simple
+User=avelarsys
+Group=avelarsys
+WorkingDirectory=/home/avelarsys/AvelarSys/AvelarMonitor
+Environment="PATH=/home/avelarsys/AvelarSys/AvelarMonitor/venv/bin"
+ExecStart=/home/avelarsys/AvelarSys/AvelarMonitor/venv/bin/daphne -b 0.0.0.0 -p 9999 painel_control.asgi:application
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

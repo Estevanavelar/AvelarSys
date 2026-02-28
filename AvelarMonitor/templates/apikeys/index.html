@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciamento de API Keys{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">API Keys</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a href="{% url 'apikey_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nova API Key
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Serviço</th>
+                    <th>Key (últimos 4)</th>
+                    <th>Status</th>
+                    <th>Criado em</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key in keys %}
+                <tr>
+                    <td>{{ key.name }}</td>
+                    <td>{{ key.get_service_display }}</td>
+                    <td><code>****{{ key.key_last4 }}</code></td>
+                    <td>
+                        <span class="badge bg-{% if key.active %}success{% else %}secondary{% endif %}">
+                            {% if key.active %}Ativo{% else %}Inativo{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ key.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'apikey_edit' key.pk %}" class="btn btn-primary">Editar</a>
+                            <a href="{% url 'apikey_toggle' key.pk %}" class="btn btn-{% if key.active %}warning{% else %}success{% endif %}" onclick="return confirmLink(this, 'Alterar status?')">
+                                {% if key.active %}Desativar{% else %}Ativar{% endif %}
+                            </a>
+                            <a href="{% url 'apikey_regenerate' key.pk %}" class="btn btn-info" onclick="return confirmLink(this, 'Regenerar key? A key atual será perdida!')">Regenerar</a>
+                            <a href="{% url 'apikey_usage' key.pk %}" class="btn btn-secondary">Uso</a>
+                            <a href="{% url 'apikey_delete' key.pk %}" class="btn btn-danger" onclick="return confirmLink(this, 'Deletar key?')">Deletar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">Nenhuma API Key cadastrada</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let confirmCallback = null;
+
+function ensureConfirmModal() {
+    if (document.getElementById('confirm-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'confirm-modal';
+    modal.style.cssText = 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:9999;';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:12px;max-width:420px;width:90%;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.2)">
+        <h5 style="margin:0 0 8px 0">Confirmar ação</h5>
+        <p id="confirm-message" style="margin:0 0 16px 0;color:#555"></p>
+        <div style="display:flex;justify-content:flex-end;gap:8px">
+          <button id="confirm-cancel" class="btn btn-secondary btn-sm">Cancelar</button>
+          <button id="confirm-ok" class="btn btn-primary btn-sm">Confirmar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('confirm-cancel').onclick = () => closeConfirm(false);
+    document.getElementById('confirm-ok').onclick = () => closeConfirm(true);
+}
+
+function showConfirm(message, onConfirm) {
+    ensureConfirmModal();
+    confirmCallback = onConfirm;
+    document.getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-modal').style.display = 'flex';
+}
+
+function closeConfirm(confirmed) {
+    document.getElementById('confirm-modal').style.display = 'none';
+    if (confirmed && typeof confirmCallback === 'function') {
+        confirmCallback();
+    }
+    confirmCallback = null;
+}
+
+function confirmLink(link, message) {
+    showConfirm(message, () => { window.location.href = link.href; });
+    return false;
+}
+</script>
+{% endblock %}

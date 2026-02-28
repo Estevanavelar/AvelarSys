@@ -1,0 +1,32 @@
+{
+  "name": "avelar-wppconnect",
+  "version": "1.0.0",
+  "description": "Servidor WPPConnect para integração WhatsApp do AvelarSys",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "setup": "node setup.js"
+  },
+  "dependencies": {
+    "@wppconnect-team/wppconnect": "^1.29.2",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "compression": "^1.7.4",
+    "redis": "^4.6.10",
+    "dotenv": "^16.3.1",
+    "uuid": "^9.0.0",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Avelar Company",
+  "license": "MIT"
+}
+

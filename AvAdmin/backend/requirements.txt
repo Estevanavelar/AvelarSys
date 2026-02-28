@@ -1,0 +1,36 @@
+# ========================================
+# AVADMIN BACKEND - Python Dependencies (SIMPLIFICADO)
+# ========================================
+
+# ============= CORE FRAMEWORK ============
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# ============= DATABASE =================
+sqlalchemy==2.0.15       # Versão muito estável (antes do bug do 'options')
+asyncpg==0.29.0          # PostgreSQL async driver
+alembic==1.12.1          # Database migrations
+psycopg2-binary==2.9.9   # Sync driver for Alembic
+
+# ============= AUTHENTICATION ============
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.1.2
+
+# ================ HTTP ===================
+httpx==0.25.2            # Async HTTP client
+
+# =============== VALIDATION ==============
+# Removido python-cpf - validação própria implementada
+
+# ================ UTILS ===================
+python-dateutil==2.8.2
+
+# ============== TEMPLATES ================
+jinja2==3.1.2            # Templates para WhatsApp messages
+
+# ============= DEVELOPMENT ===============
+python-dotenv==1.0.0      # Environment variables
+aiohttp>=3.9.0            # HTTP client

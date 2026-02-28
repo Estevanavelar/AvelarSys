@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Disco - Monitoramento{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Monitoramento de Disco</h1>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Informações do Disco</h5>
+                <p><strong>Total:</strong> {{ disk_info.total|floatformat:2 }} GB</p>
+                <p><strong>Usado:</strong> {{ disk_info.used|floatformat:2 }} GB</p>
+                <p><strong>Livre:</strong> {{ disk_info.free|floatformat:2 }} GB</p>
+                <p><strong>Uso:</strong> {{ disk_info.percent }}%</p>
+                
+                <div class="progress mt-3" style="height: 30px;">
+                    <div class="progress-bar {% if disk_info.percent > 90 %}bg-danger{% elif disk_info.percent > 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                         role="progressbar" 
+                         style="width: {{ disk_info.percent }}%"
+                         aria-valuenow="{{ disk_info.percent }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                        {{ disk_info.percent }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if disk_info.docker %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Uso do Docker</h5>
+                {% if disk_info.docker.error %}
+                    <div class="alert alert-warning">{{ disk_info.docker.error }}</div>
+                {% else %}
+                    <p><strong>Total Docker:</strong> {{ disk_info.docker.total|floatformat:2 }} GB</p>
+                    <p><strong>Recuperável:</strong> 
+                        <span class="badge bg-warning">{{ disk_info.docker.reclaimable|floatformat:2 }} GB</span>
+                    </p>
+                    
+                    {% if disk_info.docker.breakdown %}
+                    <hr>
+                    <h6>Breakdown:</h6>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Tamanho</th>
+                                <th>Recuperável</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for type_name, data in disk_info.docker.breakdown.items %}
+                            <tr>
+                                <td>{{ type_name }}</td>
+                                <td>{{ data.size|floatformat:2 }} GB</td>
+                                <td>
+                                    {% if data.reclaimable > 0 %}
+                                        <span class="badge bg-warning">{{ data.reclaimable|floatformat:2 }} GB</span>
+                                    {% else %}
+                                        <span class="text-muted">0 GB</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                    
+                    {% if disk_info.docker.reclaimable > 10 %}
+                    <div class="alert alert-warning mt-3">
+                        <strong>⚠️ Atenção!</strong> Você pode liberar {{ disk_info.docker.reclaimable|floatformat:2 }} GB 
+                        executando: <code>docker system prune -a -f</code>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<a href="{% url 'monitoring' %}" class="btn btn-secondary mt-3">Voltar</a>
+{% endblock %}
+

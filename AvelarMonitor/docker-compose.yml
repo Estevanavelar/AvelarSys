@@ -1,0 +1,74 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: avelarsys-amo
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-change-me-in-production}
+      DEBUG: ${DEBUG:-False}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,amo.avelarcompany.dev.br}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-https://amo.avelarcompany.dev.br}
+      REDIS_URL: redis://redis:6379/1
+      CELERY_BROKER_URL: redis://redis:6379/2
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      MULTI_SERVER_ENABLED: ${MULTI_SERVER_ENABLED:-True}
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+      CLOUDFLARE_ZONE_ID_AMO: ${CLOUDFLARE_ZONE_ID_AMO:-}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
+      CLOUDFLARE_ZONE_AMO: ${CLOUDFLARE_ZONE_AMO:-amo.avelarcompany.dev.br}
+      JWT_SECRET: ${JWT_SECRET:-7e8b3e0b9569e981108237b28f79e689484de500f9505ed3d93c60e7657f00c5}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      AVADMIN_API_URL: ${AVADMIN_API_URL:-https://avadmin.avelarcompany.com.br}
+      APP_PORTAL_URL: ${APP_PORTAL_URL:-https://app.avelarcompany.com.br}
+    volumes:
+      - amo_data:/app
+      - amo_logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host:ro
+    networks:
+      - avelarsys-network
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             daphne -b 0.0.0.0 -p 8000 painel_control.asgi:application"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: avelarsys-amo-celery
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-change-me-in-production}
+      DEBUG: ${DEBUG:-False}
+      REDIS_URL: redis://redis:6379/1
+      CELERY_BROKER_URL: redis://redis:6379/2
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    volumes:
+      - amo_data:/app
+      - amo_logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host:ro
+    networks:
+      - avelarsys-network
+    command: celery -A painel_control worker -l INFO
+
+volumes:
+  amo_data:
+    driver: local
+  amo_logs:
+    driver: local
+
+networks:
+  avelarsys-network:
+    external: true

@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciamento DNS{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Gerenciamento DNS</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a href="{% url 'domain_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Novo Domínio
+        </a>
+        <a href="{% url 'record_create' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Novo Registro
+        </a>
+        <a href="{% url 'dns' %}?sync=true" class="btn btn-info" onclick="return confirmLink(this, 'Deseja sincronizar e integrar todos os domínios descobertos ao banco de dados?')">
+            <i class="bi bi-arrow-repeat"></i> Sincronizar Domínios
+        </a>
+    </div>
+</div>
+
+{% if auto_sync %}
+<div class="alert alert-success mb-4">
+    <strong><i class="bi bi-check-circle"></i> Sincronização Concluída!</strong> Domínios descobertos foram integrados ao banco de dados.
+</div>
+{% endif %}
+
+<div class="alert alert-info mb-4">
+    <strong><i class="bi bi-info-circle"></i> Domínios Descobertos:</strong> {{ total_domains }} domínios encontrados no sistema | 
+    <strong>Registros:</strong> {{ total_records }} registros DNS encontrados
+    {% if system_domains|length > domains|length %}
+    <br><small class="text-muted">
+        <i class="bi bi-exclamation-triangle"></i> {{ system_domains|length|add:domains|length|add:"-"|add:domains|length }} domínios descobertos ainda não estão no banco de dados. 
+        Use o botão "Sincronizar Domínios" para integrá-los.
+    </small>
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Domínios do Sistema</h5>
+                <span class="badge bg-info">{{ system_domains|length }}</span>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Origem</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for domain in system_domains %}
+                        <tr>
+                            <td>
+                                <strong>{{ domain.name }}</strong>
+                                {% if domain.is_system %}
+                                    <span class="badge bg-secondary">Sistema</span>
+                                {% else %}
+                                    <span class="badge bg-primary">Banco</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if domain.is_system %}
+                                    <small class="text-muted">{{ domain.source }}</small>
+                                {% else %}
+                                    <small>{{ domain.provider }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if domain.is_system %}
+                                    <span class="badge bg-warning">Descoberto</span>
+                                {% else %}
+                                    <a href="{% url 'domain_edit' domain.id %}" class="btn btn-sm btn-primary">Editar</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">Nenhum domínio encontrado</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Registros DNS do Sistema</h5>
+                <span class="badge bg-info">{{ system_records|length }}</span>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Domínio</th>
+                            <th>Conteúdo</th>
+                            <th>Origem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in system_records %}
+                        <tr>
+                            <td><span class="badge bg-primary">{{ record.type }}</span></td>
+                            <td>
+                                {% if record.name == '@' %}
+                                    <strong>{{ record.domain }}</strong>
+                                {% else %}
+                                    {{ record.name }}.{{ record.domain }}
+                                {% endif %}
+                            </td>
+                            <td><code>{{ record.content|truncatewords:10 }}</code></td>
+                            <td>
+                                {% if record.is_system %}
+                                    <span class="badge bg-warning">{{ record.source }}</span>
+                                {% else %}
+                                    <a href="{% url 'record_edit' record.id %}" class="btn btn-sm btn-primary">Editar</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">Nenhum registro DNS encontrado</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Domínios Gerenciados (Banco de Dados)</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Provedor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for domain in domains %}
+                        <tr>
+                            <td>{{ domain.name }}</td>
+                            <td>{{ domain.get_provider_display }}</td>
+                            <td>
+                                <a href="{% url 'domain_edit' domain.pk %}" class="btn btn-sm btn-primary">Editar</a>
+                                <a href="{% url 'domain_sync' domain.pk %}" class="btn btn-sm btn-info" onclick="return confirmLink(this, 'Sincronizar registros?')">Sincronizar</a>
+                                <a href="{% url 'domain_delete' domain.pk %}" class="btn btn-sm btn-danger">Deletar</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center">Nenhum domínio cadastrado</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Registros DNS Gerenciados (Banco de Dados)</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Nome</th>
+                            <th>Conteúdo</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td><span class="badge bg-primary">{{ record.type }}</span></td>
+                            <td>{{ record.name }}.{{ record.domain.name }}</td>
+                            <td>{{ record.content }}</td>
+                            <td>
+                                <a href="{% url 'record_edit' record.pk %}" class="btn btn-sm btn-primary">Editar</a>
+                                <a href="{% url 'check_propagation' record.pk %}" class="btn btn-sm btn-info" target="_blank">Verificar</a>
+                                <a href="{% url 'record_delete' record.pk %}" class="btn btn-sm btn-danger">Deletar</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">Nenhum registro DNS</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let confirmCallback = null;
+
+function ensureConfirmModal() {
+    if (document.getElementById('confirm-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'confirm-modal';
+    modal.style.cssText = 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:9999;';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:12px;max-width:420px;width:90%;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.2)">
+        <h5 style="margin:0 0 8px 0">Confirmar ação</h5>
+        <p id="confirm-message" style="margin:0 0 16px 0;color:#555"></p>
+        <div style="display:flex;justify-content:flex-end;gap:8px">
+          <button id="confirm-cancel" class="btn btn-secondary btn-sm">Cancelar</button>
+          <button id="confirm-ok" class="btn btn-primary btn-sm">Confirmar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('confirm-cancel').onclick = () => closeConfirm(false);
+    document.getElementById('confirm-ok').onclick = () => closeConfirm(true);
+}
+
+function showConfirm(message, onConfirm) {
+    ensureConfirmModal();
+    confirmCallback = onConfirm;
+    document.getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-modal').style.display = 'flex';
+}
+
+function closeConfirm(confirmed) {
+    document.getElementById('confirm-modal').style.display = 'none';
+    if (confirmed && typeof confirmCallback === 'function') {
+        confirmCallback();
+    }
+    confirmCallback = null;
+}
+
+function confirmLink(link, message) {
+    showConfirm(message, () => { window.location.href = link.href; });
+    return false;
+}
+</script>
+{% endblock %}

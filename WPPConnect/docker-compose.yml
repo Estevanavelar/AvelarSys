@@ -1,0 +1,171 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # REDIS - Cache para performance
+  # ========================================
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    env_file:
+      - ../docker.env
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - avelarsys-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========================================
+  # NGINX - Load Balancer
+  # ========================================
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    env_file:
+      - ../docker.env
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - wpp-avelarsys
+    networks:
+      - avelarsys-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:8002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========================================
+  # WPPCONNECT - Instância 1 (Principal)
+  # ========================================
+  wpp-avelarsys:
+    build:
+      context: /home/avelarsys/AvelarSys/WPPConnect
+      dockerfile: Dockerfile
+    container_name: avelarsys-wpp
+    user: "0:0"
+    env_file:
+      - ../docker.env
+    command: ["sh", "/app/start.sh"]
+    environment:
+      - WPP_PORT=8003
+      - WPP_SESSION=${WPP_SESSION:-avelar-session}
+      - WPP_SECRET=${WPP_SECRET:-avelar-wpp-secret}
+      - WEBHOOK_URL=http://avelarsys-avadmin-backend:8000/api/whatsapp/webhook
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=production
+    ports:
+      - "8003:8003"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - /home/avelarsys/AvelarSys/WPPConnect/tokens:/app/tokens
+    networks:
+      - avelarsys-network
+    depends_on:
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ========================================
+  # WPPCONNECT - Instância 2 (Backup/Load)
+  # ========================================
+  wppconnect-2:
+    build:
+      context: /home/avelarsys/AvelarSys/WPPConnect
+      dockerfile: Dockerfile
+    container_name: avelarsys-wppconnect-2
+    user: "0:0"
+    env_file:
+      - ../docker.env
+    command: ["sh", "/app/start.sh"]
+    environment:
+      - WPP_PORT=8006
+      - WPP_SESSION=${WPP_SESSION_2:-avelar-session-2}
+      - WPP_SECRET=${WPP_SECRET:-avelar-wpp-secret}
+      - WEBHOOK_URL=http://avelarsys-avadmin-backend:8000/api/whatsapp/webhook
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=production
+    ports:
+      - "8006:8006"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - /home/avelarsys/AvelarSys/WPPConnect/tokens-2:/app/tokens
+    networks:
+      - avelarsys-network
+    depends_on:
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ========================================
+  # WPPCONNECT - Instância 3 (Escalabilidade)
+  # ========================================
+  wppconnect-3:
+    build:
+      context: /home/avelarsys/AvelarSys/WPPConnect
+      dockerfile: Dockerfile
+    container_name: avelarsys-wppconnect-3
+    user: "0:0"
+    env_file:
+      - ../docker.env
+    command: ["sh", "/app/start.sh"]
+    environment:
+      - WPP_PORT=8005
+      - WPP_SESSION=${WPP_SESSION_3:-avelar-session-3}
+      - WPP_SECRET=${WPP_SECRET:-avelar-wpp-secret}
+      - WEBHOOK_URL=http://avelarsys-avadmin-backend:8000/api/whatsapp/webhook
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=production
+    ports:
+      - "8005:8005"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - /home/avelarsys/AvelarSys/WPPConnect/tokens-3:/app/tokens
+    networks:
+      - avelarsys-network
+    depends_on:
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  avelarsys-network:
+    external: true

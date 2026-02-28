@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conexão WhatsApp - TurboZap</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .header a { color: white; opacity: 0.9; text-decoration: none; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .instance-card {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+        .instance-card:hover {
+            border-color: #667eea;
+        }
+        .instance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .instance-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .status-connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-disconnected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .status-waiting {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .status-connected .status-dot {
+            background: #10b981;
+        }
+        .status-disconnected .status-dot {
+            background: #ef4444;
+            animation: none;
+        }
+        .status-waiting .status-dot {
+            background: #f59e0b;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .qr-section {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+        .qr-code {
+            max-width: 300px;
+            margin: 1rem auto;
+            padding: 1rem;
+            background: white;
+            border: 2px dashed #d1d5db;
+            border-radius: 10px;
+        }
+        .qr-code img {
+            width: 100%;
+            height: auto;
+        }
+        .qr-placeholder {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            border-radius: 10px;
+            color: #6b7280;
+            font-size: 4rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover { background: #5a6fd6; }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success:hover { background: #059669; }
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        .btn-warning:hover { background: #d97706; }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .info-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .info-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+        .info-value {
+            font-weight: 600;
+            color: #374151;
+            word-break: break-all;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border-left: 4px solid #f59e0b;
+        }
+        .instructions {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        .instructions h3 {
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+        .instructions ol {
+            margin-left: 1.5rem;
+            color: #6b7280;
+        }
+        .instructions li {
+            margin-bottom: 0.5rem;
+        }
+        .refresh-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ TurboZap</h1>
+        <p>Gerenciamento de Conexão WhatsApp</p>
+        <div class="header-actions" style="margin-top: 1rem; display: flex; gap: 1rem;">
+            <a href="/" style="color: white; text-decoration: none; opacity: 0.9;">← Voltar ao Dashboard</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2 style="margin-bottom: 1rem;">📱 Instâncias WhatsApp</h2>
+            <div class="refresh-indicator" style="margin-bottom: 1rem;">
+                <span>🔄 Atualização automática a cada 5 segundos</span>
+            </div>
+            
+            <div id="instances-container">
+                {% for instance in instances %}
+                <div class="instance-card" data-host="{{ instance.host }}">
+                    <div class="instance-header">
+                        <span class="instance-name">{{ instance.instance }}</span>
+                        <span class="status-badge status-{{ 'connected' if instance.connected else 'disconnected' }}">
+                            <span class="status-dot"></span>
+                            {{ 'Conectado' if instance.connected else 'Desconectado' }}
+                        </span>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Host</div>
+                            <div class="info-value" style="font-size: 0.875rem;">{{ instance.host }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Status</div>
+                            <div class="info-value">{{ instance.status }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Uptime</div>
+                            <div class="info-value">{{ "%.0f"|format(instance.uptime // 60) if instance.uptime else '-' }} min</div>
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        {% if instance.connected %}
+                        <button onclick="importContacts('{{ instance.host }}')" class="btn btn-success">
+                            📥 Importar Contatos
+                        </button>
+                        <button onclick="disconnectWhatsApp('{{ instance.host }}')" class="btn btn-danger">
+                            🔌 Desconectar
+                        </button>
+                        <button onclick="restartWhatsApp('{{ instance.host }}')" class="btn btn-warning">
+                            🔄 Reiniciar
+                        </button>
+                        {% else %}
+                        <button onclick="connectWhatsApp('{{ instance.host }}')" class="btn btn-success">
+                            📲 Conectar
+                        </button>
+                        <button onclick="restartWhatsApp('{{ instance.host }}')" class="btn btn-warning">
+                            🔄 Reiniciar
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Seção Importação de Contatos -->
+        <div class="section" id="import-section" style="display: none;">
+            <h2 style="margin-bottom: 1rem;">📥 Importar Contatos do WhatsApp</h2>
+            
+            <div class="alert alert-info" style="margin-bottom: 1rem;">
+                <strong>💡 Dica:</strong> Importe contatos salvos na agenda e de conversas recentes. 
+                O sistema captura o nome do perfil WhatsApp (mesmo para empresas verificadas).
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Filtrar contatos:</label>
+                <select id="filter-type" style="padding: 0.5rem; border-radius: 6px; border: 1px solid #d1d5db; width: 100%; max-width: 300px;">
+                    <option value="all">Todos (Salvos + Conversas)</option>
+                    <option value="saved">Apenas Salvos na Agenda</option>
+                    <option value="chats">Apenas Conversas Recentes</option>
+                </select>
+            </div>
+
+            <div id="contacts-loading" style="text-align: center; padding: 2rem;">
+                <div class="loading"></div>
+                <p style="margin-top: 1rem; color: #6b7280;">Buscando contatos...</p>
+            </div>
+
+            <div id="contacts-list" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div>
+                        <span id="contacts-count" style="font-weight: 600;">0</span> contatos encontrados
+                    </div>
+                    <div>
+                        <button onclick="selectAllContacts()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Selecionar Todos</button>
+                        <button onclick="deselectAllContacts()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem; margin-left: 0.5rem;">Desselecionar Todos</button>
+                    </div>
+                </div>
+
+                <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="position: sticky; top: 0; background: #f9fafb;">
+                            <tr>
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; width: 40px;">
+                                    <input type="checkbox" id="select-all-checkbox" onchange="toggleAllContacts()">
+                                </th>
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb;">Nome</th>
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb;">Telefone</th>
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb;">Origem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contacts-tbody">
+                            <!-- Contatos serão inseridos aqui -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding: 1rem; background: #f9fafb; border-radius: 8px;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Importar para:</label>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button onclick="importToNewCampaign()" class="btn btn-primary">
+                            ➕ Nova Campanha
+                        </button>
+                        <select id="existing-campaign" style="padding: 0.5rem; border-radius: 6px; border: 1px solid #d1d5db;">
+                            <option value="">Selecionar campanha existente...</option>
+                        </select>
+                        <button onclick="importToExistingCampaign()" class="btn btn-success" id="btn-import-existing" disabled>
+                            📋 Adicionar à Campanha
+                        </button>
+                    </div>
+                </div>
+
+                <div id="import-status" style="margin-top: 1rem;"></div>
+            </div>
+
+            <div class="actions" style="margin-top: 1.5rem;">
+                <button onclick="cancelImport()" class="btn btn-secondary">
+                    ✕ Cancelar
+                </button>
+            </div>
+        </div>
+
+        <!-- Seção QR Code -->
+        <div class="section" id="qr-section" style="display: none;">
+            <h2 style="margin-bottom: 1rem;">📲 QR Code para Conexão</h2>
+            <div id="qr-status"></div>
+            
+            <div class="qr-section">
+                <div id="qr-display" class="qr-code">
+                    <div class="qr-placeholder">📱</div>
+                </div>
+                <p id="qr-message" style="color: #6b7280; margin-top: 1rem;">
+                    Escaneie o QR Code com seu WhatsApp
+                </p>
+            </div>
+            
+            <div class="actions" style="justify-content: center;">
+                <button onclick="refreshQRCode()" class="btn btn-primary">
+                    🔄 Atualizar QR Code
+                </button>
+                <button onclick="cancelConnection()" class="btn btn-secondary">
+                    ✕ Cancelar
+                </button>
+            </div>
+            
+            <div class="instructions">
+                <h3>📋 Como conectar:</h3>
+                <ol>
+                    <li>Abra o WhatsApp no seu celular</li>
+                    <li>Toque em ⋮ (menu) → Dispositivos vinculados</li>
+                    <li>Toque em "Vincular um dispositivo"</li>
+                    <li>Aponte a câmera para o QR Code acima</li>
+                    <li>Aguarde a conexão ser estabelecida</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Perfil Conectado -->
+        <div class="section" id="profile-section" style="display: none;">
+            <h2 style="margin-bottom: 1rem;">👤 Perfil Conectado</h2>
+            <div id="profile-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Nome</div>
+                        <div class="info-value" id="profile-name">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Telefone</div>
+                        <div class="info-value" id="profile-phone">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Plataforma</div>
+                        <div class="info-value" id="profile-platform">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentHost = null;
+        let refreshInterval = null;
+        let qrCheckInterval = null;
+
+        // Atualizar status a cada 5 segundos
+        function startAutoRefresh() {
+            refreshInterval = setInterval(async () => {
+                await refreshStatus();
+            }, 5000);
+        }
+
+        async function refreshStatus() {
+            try {
+                const response = await fetch('/api/whatsapp/status');
+                const instances = await response.json();
+                updateInstancesUI(instances);
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+            }
+        }
+
+        function updateInstancesUI(instances) {
+            const container = document.getElementById('instances-container');
+            
+            instances.forEach(instance => {
+                const card = document.querySelector(`[data-host="${instance.host}"]`);
+                if (card) {
+                    const statusBadge = card.querySelector('.status-badge');
+                    const actions = card.querySelector('.actions');
+                    
+                    // Atualizar status
+                    statusBadge.className = `status-badge status-${instance.connected ? 'connected' : 'disconnected'}`;
+                    statusBadge.innerHTML = `
+                        <span class="status-dot"></span>
+                        ${instance.connected ? 'Conectado' : 'Desconectado'}
+                    `;
+                    
+                    // Atualizar botões
+                    if (instance.connected) {
+                        actions.innerHTML = `
+                            <button onclick="disconnectWhatsApp('${instance.host}')" class="btn btn-danger">
+                                🔌 Desconectar
+                            </button>
+                            <button onclick="restartWhatsApp('${instance.host}')" class="btn btn-warning">
+                                🔄 Reiniciar
+                            </button>
+                        `;
+                        
+                        // Se esta é a instância atual, mostrar perfil
+                        if (currentHost === instance.host) {
+                            showProfile(instance.host);
+                        }
+                    } else {
+                        actions.innerHTML = `
+                            <button onclick="connectWhatsApp('${instance.host}')" class="btn btn-success">
+                                📲 Conectar
+                            </button>
+                            <button onclick="restartWhatsApp('${instance.host}')" class="btn btn-warning">
+                                🔄 Reiniciar
+                            </button>
+                        `;
+                    }
+                }
+            });
+        }
+
+        async function connectWhatsApp(host) {
+            currentHost = host;
+            document.getElementById('qr-section').style.display = 'block';
+            document.getElementById('profile-section').style.display = 'none';
+            
+            await refreshQRCode();
+            
+            // Verificar QR Code a cada 3 segundos
+            if (qrCheckInterval) clearInterval(qrCheckInterval);
+            qrCheckInterval = setInterval(async () => {
+                await checkQRCode();
+            }, 3000);
+        }
+
+        async function refreshQRCode() {
+            const qrDisplay = document.getElementById('qr-display');
+            const qrMessage = document.getElementById('qr-message');
+            
+            qrDisplay.innerHTML = '<div class="loading"></div>';
+            qrMessage.textContent = 'Carregando QR Code...';
+            
+            try {
+                console.log('Buscando QR Code para host:', currentHost);
+                const response = await fetch(`/api/whatsapp/qrcode?host=${encodeURIComponent(currentHost)}`);
+                const data = await response.json();
+                console.log('Resposta do QR Code:', data);
+                
+                if (data.status === 'connected') {
+                    qrDisplay.innerHTML = '<div class="qr-placeholder">✅</div>';
+                    qrMessage.innerHTML = '<span style="color: #10b981;">WhatsApp já conectado!</span>';
+                    clearInterval(qrCheckInterval);
+                    setTimeout(() => location.reload(), 2000);
+                } else if (data.qrcode) {
+                    // Verificar se já tem o prefixo data:image
+                    let qrSrc = data.qrcode;
+                    if (!qrSrc.startsWith('data:')) {
+                        qrSrc = 'data:image/png;base64,' + qrSrc;
+                    }
+                    console.log('QR Code encontrado, exibindo imagem...');
+                    qrDisplay.innerHTML = `<img src="${qrSrc}" alt="QR Code" style="max-width: 280px; width: 100%; height: auto;" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'qr-placeholder\\'>❌ Erro ao carregar imagem</div>';">`;
+                    qrMessage.innerHTML = '<span style="color: #374151;"><strong>Escaneie o QR Code com seu WhatsApp</strong></span><br><small style="color: #6b7280;">O código é atualizado a cada 30 segundos</small>';
+                } else {
+                    console.log('QR Code não disponível:', data.message);
+                    qrDisplay.innerHTML = '<div class="qr-placeholder">⏳</div>';
+                    qrMessage.innerHTML = `<span style="color: #92400e;">⏳ ${data.message || 'Aguardando QR Code...'}</span><br><small style="color: #6b7280;">Isso pode levar alguns segundos</small>`;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar QR Code:', error);
+                qrDisplay.innerHTML = '<div class="qr-placeholder">❌</div>';
+                qrMessage.innerHTML = `<span style="color: #dc2626;">❌ Erro ao carregar QR Code</span><br><small style="color: #6b7280;">${error.message}</small><br><button onclick="refreshQRCode()" class="btn btn-primary" style="margin-top: 1rem;">🔄 Tentar Novamente</button>`;
+            }
+        }
+
+        async function checkQRCode() {
+            try {
+                const response = await fetch(`/api/whatsapp/status`);
+                const instances = await response.json();
+                
+                const currentInstance = instances.find(i => i.host === currentHost);
+                if (currentInstance && currentInstance.connected) {
+                    clearInterval(qrCheckInterval);
+                    document.getElementById('qr-section').style.display = 'none';
+                    showProfile(currentHost);
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Erro ao verificar conexão:', error);
+            }
+        }
+
+        async function disconnectWhatsApp(host) {
+            if (!confirm('Tem certeza que deseja desconectar o WhatsApp?')) return;
+            
+            try {
+                const response = await fetch(`/api/whatsapp/disconnect?host=${encodeURIComponent(host)}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('WhatsApp desconectado com sucesso!');
+                    location.reload();
+                } else {
+                    alert('Erro: ' + (data.error || 'Erro ao desconectar'));
+                }
+            } catch (error) {
+                alert('Erro ao desconectar: ' + error.message);
+            }
+        }
+
+        async function restartWhatsApp(host) {
+            if (!confirm('Reiniciar a sessão WhatsApp?')) return;
+            
+            try {
+                const response = await fetch(`/api/whatsapp/restart?host=${encodeURIComponent(host)}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Sessão reiniciada! Aguarde o QR Code...');
+                    setTimeout(() => connectWhatsApp(host), 3000);
+                } else {
+                    alert('Erro: ' + (data.error || 'Erro ao reiniciar'));
+                }
+            } catch (error) {
+                alert('Erro ao reiniciar: ' + error.message);
+            }
+        }
+
+        async function showProfile(host) {
+            try {
+                const response = await fetch(`/api/whatsapp/profile?host=${encodeURIComponent(host)}`);
+                const data = await response.json();
+                
+                if (data.connected) {
+                    document.getElementById('profile-section').style.display = 'block';
+                    document.getElementById('profile-name').textContent = data.name || '-';
+                    document.getElementById('profile-phone').textContent = data.phone || '-';
+                    document.getElementById('profile-platform').textContent = data.platform || '-';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar perfil:', error);
+            }
+        }
+
+        function cancelConnection() {
+            document.getElementById('qr-section').style.display = 'none';
+            currentHost = null;
+            if (qrCheckInterval) clearInterval(qrCheckInterval);
+        }
+
+        // Variáveis para importação
+        let contactsData = [];
+        let selectedContacts = new Set();
+
+        async function importContacts(host) {
+            currentHost = host;
+            document.getElementById('import-section').style.display = 'block';
+            document.getElementById('qr-section').style.display = 'none';
+            document.getElementById('contacts-loading').style.display = 'block';
+            document.getElementById('contacts-list').style.display = 'none';
+            
+            // Carregar campanhas existentes
+            await loadExistingCampaigns();
+            
+            // Buscar contatos
+            await fetchContacts();
+        }
+
+        async function loadExistingCampaigns() {
+            try {
+                const response = await fetch('/api/campaigns');
+                const campaigns = await response.json();
+                
+                const select = document.getElementById('existing-campaign');
+                select.innerHTML = '<option value="">Selecionar campanha existente...</option>';
+                
+                campaigns.forEach(campaign => {
+                    if (campaign.status === 'created' || campaign.status === 'paused') {
+                        const option = document.createElement('option');
+                        option.value = campaign.id;
+                        option.textContent = campaign.name;
+                        select.appendChild(option);
+                    }
+                });
+                
+                select.addEventListener('change', (e) => {
+                    document.getElementById('btn-import-existing').disabled = !e.target.value;
+                });
+            } catch (error) {
+                console.error('Erro ao carregar campanhas:', error);
+            }
+        }
+
+        async function fetchContacts() {
+            const filterType = document.getElementById('filter-type').value;
+            
+            try {
+                document.getElementById('contacts-loading').style.display = 'block';
+                document.getElementById('contacts-list').style.display = 'none';
+                
+                const response = await fetch(`/api/whatsapp/contacts?host=${encodeURIComponent(currentHost)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    contactsData = data.contacts || [];
+                    renderContacts();
+                } else {
+                    showImportError(data.error || 'Erro ao buscar contatos');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showImportError('Erro ao buscar contatos: ' + error.message);
+            }
+        }
+
+        function renderContacts() {
+            const tbody = document.getElementById('contacts-tbody');
+            const countEl = document.getElementById('contacts-count');
+            
+            tbody.innerHTML = '';
+            countEl.textContent = contactsData.length;
+            
+            contactsData.forEach((contact, index) => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #e5e7eb';
+                
+                // Determinar o melhor nome
+                const displayName = contact.name || contact.pushname || contact.verifiedName || contact.phone;
+                const isBusiness = contact.isBusiness ? ' 🏢' : '';
+                
+                row.innerHTML = `
+                    <td style="padding: 0.75rem;">
+                        <input type="checkbox" class="contact-checkbox" 
+                               data-index="${index}" 
+                               data-phone="${contact.phone}"
+                               onchange="toggleContact(${index})">
+                    </td>
+                    <td style="padding: 0.75rem;">
+                        <div style="font-weight: 500;">${displayName}${isBusiness}</div>
+                        ${contact.pushname && contact.pushname !== displayName ? `<small style="color: #6b7280;">(${contact.pushname})</small>` : ''}
+                    </td>
+                    <td style="padding: 0.75rem; color: #6b7280;">${contact.phone}</td>
+                    <td style="padding: 0.75rem;">
+                        <span style="background: ${contact.isSaved ? '#d1fae5' : '#fef3c7'}; 
+                                     color: ${contact.isSaved ? '#065f46' : '#92400e'};
+                                     padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                            ${contact.isSaved ? '✓ Agenda' : '💬 Chat'}
+                        </span>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('contacts-loading').style.display = 'none';
+            document.getElementById('contacts-list').style.display = 'block';
+        }
+
+        function toggleContact(index) {
+            const checkbox = document.querySelector(`[data-index="${index}"]`);
+            if (checkbox.checked) {
+                selectedContacts.add(index);
+            } else {
+                selectedContacts.delete(index);
+            }
+            updateSelectAllCheckbox();
+        }
+
+        function toggleAllContacts() {
+            const selectAllCheckbox = document.getElementById('select-all-checkbox');
+            const checkboxes = document.querySelectorAll('.contact-checkbox');
+            
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.checked = selectAllCheckbox.checked;
+                if (selectAllCheckbox.checked) {
+                    selectedContacts.add(index);
+                } else {
+                    selectedContacts.delete(index);
+                }
+            });
+        }
+
+        function selectAllContacts() {
+            document.getElementById('select-all-checkbox').checked = true;
+            toggleAllContacts();
+        }
+
+        function deselectAllContacts() {
+            document.getElementById('select-all-checkbox').checked = false;
+            toggleAllContacts();
+        }
+
+        function updateSelectAllCheckbox() {
+            const checkboxes = document.querySelectorAll('.contact-checkbox');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            document.getElementById('select-all-checkbox').checked = allChecked;
+        }
+
+        async function importToNewCampaign() {
+            const selected = Array.from(selectedContacts).map(i => contactsData[i]);
+            if (selected.length === 0) {
+                alert('Selecione pelo menos um contato');
+                return;
+            }
+            
+            const name = prompt('Nome da nova campanha:');
+            if (!name) return;
+            
+            try {
+                // Criar campanha
+                const createResponse = await fetch('/api/campaigns', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        message_template: 'Olá! Temos uma mensagem especial para você.',
+                        delay_min: 5,
+                        delay_max: 15,
+                        max_per_hour: 50
+                    })
+                });
+                
+                const campaign = await createResponse.json();
+                
+                // Importar contatos
+                await importContactsToCampaign(campaign.id, selected);
+                
+            } catch (error) {
+                alert('Erro ao criar campanha: ' + error.message);
+            }
+        }
+
+        async function importToExistingCampaign() {
+            const campaignId = document.getElementById('existing-campaign').value;
+            if (!campaignId) {
+                alert('Selecione uma campanha');
+                return;
+            }
+            
+            const selected = Array.from(selectedContacts).map(i => contactsData[i]);
+            if (selected.length === 0) {
+                alert('Selecione pelo menos um contato');
+                return;
+            }
+            
+            await importContactsToCampaign(campaignId, selected);
+        }
+
+        async function importContactsToCampaign(campaignId, contacts) {
+            const statusEl = document.getElementById('import-status');
+            statusEl.innerHTML = '<p style="color: #667eea;">⏳ Importando contatos...</p>';
+            
+            try {
+                const response = await fetch('/api/whatsapp/import-contacts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        host: currentHost,
+                        campaign_id: parseInt(campaignId),
+                        contacts: contacts
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusEl.innerHTML = `
+                        <div style="background: #d1fae5; color: #065f46; padding: 1rem; border-radius: 6px;">
+                            ✅ <strong>${result.imported}</strong> contatos importados com sucesso!
+                            <br><a href="/campaigns/${campaignId}" style="color: #065f46; text-decoration: underline;">Ver campanha →</a>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        window.location.href = `/campaigns/${campaignId}`;
+                    }, 2000);
+                } else {
+                    statusEl.innerHTML = `
+                        <div style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 6px;">
+                            ❌ Erro: ${result.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                statusEl.innerHTML = `
+                    <div style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 6px;">
+                        ❌ Erro: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function showImportError(message) {
+            document.getElementById('contacts-loading').style.display = 'none';
+            document.getElementById('import-status').innerHTML = `
+                <div style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 6px;">
+                    ❌ ${message}
+                </div>
+            `;
+        }
+
+        function cancelImport() {
+            document.getElementById('import-section').style.display = 'none';
+            contactsData = [];
+            selectedContacts.clear();
+        }
+
+        // Iniciar atualização automática
+        startAutoRefresh();
+        
+        // Limpar intervalos ao sair da página
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) clearInterval(refreshInterval);
+            if (qrCheckInterval) clearInterval(qrCheckInterval);
+        });
+    </script>
+</body>
+</html>

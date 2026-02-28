@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TurboZap - Disparador de Mensagens</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; }
+        .header-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .header-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: background 0.2s;
+        }
+        .header-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .stat-card h3 {
+            font-size: 0.875rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover { background: #5a6fd6; }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .section h2 { font-size: 1.25rem; color: #333; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-created { background: #f3f4f6; color: #6b7280; }
+        .status-running { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-paused { background: #fef3c7; color: #92400e; }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
+        .status-error { background: #fecaca; color: #7f1d1d; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: #f3f4f6;
+            transition: background 0.2s;
+        }
+        .icon-btn:hover { background: #e5e7eb; }
+        .icon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ TurboZap</h1>
+        <p>Disparador de Mensagens WhatsApp</p>
+        <div class="header-actions">
+            <a href="/whatsapp" class="header-btn">📱 Conexão WhatsApp</a>
+            <a href="/" class="header-btn">📊 Dashboard</a>
+        </div>
+    </div>
+
+    <div class="container">
+        {% if running_count > 0 %}
+        <div class="alert alert-info">
+            <strong>📱 Campanha em execução!</strong> Há {{ running_count }} campanha(s) enviando mensagens no momento.
+        </div>
+        {% endif %}
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Campanhas</h3>
+                <div class="value">{{ campaigns|length }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Em Execução</h3>
+                <div class="value" style="color: #10b981;">{{ running_count }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Concluídas</h3>
+                <div class="value" style="color: #667eea;">
+                    {{ campaigns|selectattr("status", "equalto", "completed")|list|length }}
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2>📋 Campanhas</h2>
+                <a href="/campaigns/new" class="btn btn-primary">
+                    <span>+</span> Nova Campanha
+                </a>
+            </div>
+
+            {% if campaigns %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Status</th>
+                        <th>Progresso</th>
+                        <th>Contatos</th>
+                        <th>Criada em</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campaign in campaigns %}
+                    <tr>
+                        <td>
+                            <strong>{{ campaign.name }}</strong>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ campaign.status }}">
+                                {{ campaign.status }}
+                            </span>
+                        </td>
+                        <td style="width: 200px;">
+                            {% set total = campaign.sent_count + campaign.failed_count + campaign.pending_count %}
+                            {% set progress = (campaign.sent_count + campaign.failed_count) / total * 100 if total > 0 else 0 %}
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ progress }}%"></div>
+                            </div>
+                            <small style="color: #666;">{{ "%.1f"|format(progress) }}%</small>
+                        </td>
+                        <td>
+                            {{ campaign.total_contacts }} total
+                            {% if campaign.sent_count > 0 %}
+                            <br><small style="color: #10b981;">{{ campaign.sent_count }} enviados</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ campaign.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>
+                            <div class="actions">
+                                <a href="/campaigns/{{ campaign.id }}" class="btn btn-sm" style="background: #f3f4f6; color: #333;">
+                                    Ver
+                                </a>
+                                {% if campaign.status == 'created' or campaign.status == 'paused' %}
+                                <button onclick="startCampaign({{ campaign.id }})" class="btn btn-sm btn-success">
+                                    ▶ Iniciar
+                                </button>
+                                {% endif %}
+                                {% if campaign.status == 'running' %}
+                                <button onclick="pauseCampaign({{ campaign.id }})" class="btn btn-sm" style="background: #f59e0b; color: white;">
+                                    ⏸ Pausar
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3>Nenhuma campanha ainda</h3>
+                <p>Crie sua primeira campanha para começar a enviar mensagens.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        async function startCampaign(id) {
+            if (!confirm('Deseja iniciar esta campanha?')) return;
+            
+            try {
+                const response = await fetch(`/api/campaigns/${id}/start`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Campanha iniciada com sucesso!');
+                    location.reload();
+                } else {
+                    alert('Erro: ' + data.detail);
+                }
+            } catch (error) {
+                alert('Erro ao iniciar campanha: ' + error.message);
+            }
+        }
+
+        async function pauseCampaign(id) {
+            if (!confirm('Deseja pausar esta campanha?')) return;
+            
+            try {
+                const response = await fetch(`/api/campaigns/${id}/pause`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Campanha pausada!');
+                    location.reload();
+                }
+            } catch (error) {
+                alert('Erro ao pausar campanha: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ campaign.name }} - TurboZap</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        .header a { color: white; opacity: 0.9; text-decoration: none; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .campaign-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-created { background: #f3f4f6; color: #6b7280; }
+        .status-running { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-paused { background: #fef3c7; color: #92400e; }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-box {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-box .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .stat-box .label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        .progress-section {
+            margin: 1.5rem 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-secondary { background: #f3f4f6; color: #374151; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .message-template {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 1rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 0.5rem;
+        }
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f9fafb;
+        }
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.875rem;
+        }
+        th {
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.75rem;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        .status-pending { background: #fbbf24; }
+        .status-sent { background: #10b981; }
+        .status-failed { background: #ef4444; }
+        .status-sending { background: #3b82f6; }
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        .config-item {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+        .config-item .value {
+            font-weight: 600;
+            color: #374151;
+        }
+        .config-item .label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>⚡ {{ campaign.name }}</h1>
+        <div class="header-actions" style="margin-top: 1rem; display: flex; gap: 1rem;">
+            <a href="/" style="color: white; text-decoration: none; opacity: 0.9;">← Voltar ao Dashboard</a>
+            <a href="/whatsapp" style="color: white; text-decoration: none; opacity: 0.9;">📱 Conexão WhatsApp</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Status e Progresso -->
+        <div class="section">
+            <div class="campaign-header">
+                <div>
+                    <span class="status-badge status-{{ campaign.status }}">
+                        {{ campaign.status }}
+                    </span>
+                    <p style="margin-top: 0.5rem; color: #6b7280;">
+                        Criada em {{ campaign.created_at.strftime('%d/%m/%Y às %H:%M') }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="number">{{ stats.total }}</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" style="color: #10b981;">{{ stats.sent }}</div>
+                    <div class="label">Enviados</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" style="color: #ef4444;">{{ stats.failed }}</div>
+                    <div class="label">Falhas</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" style="color: #f59e0b;">{{ stats.pending }}</div>
+                    <div class="label">Pendentes</div>
+                </div>
+            </div>
+
+            {% set total = stats.sent + stats.failed + stats.pending %}
+            {% set progress = (stats.sent + stats.failed) / total * 100 if total > 0 else 0 %}
+            <div class="progress-section">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ progress }}%">
+                        {% if progress > 10 %}{{ "%.1f"|format(progress) }}%{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="actions">
+                {% if campaign.status == 'created' or campaign.status == 'paused' %}
+                <button onclick="startCampaign()" class="btn btn-success">
+                    ▶ Iniciar Envio
+                </button>
+                {% endif %}
+                
+                {% if campaign.status == 'running' %}
+                <button onclick="pauseCampaign()" class="btn btn-warning">
+                    ⏸ Pausar
+                </button>
+                {% endif %}
+                
+                {% if campaign.status not in ['completed', 'cancelled'] %}
+                <button onclick="cancelCampaign()" class="btn btn-danger">
+                    ✕ Cancelar
+                </button>
+                {% endif %}
+                
+                <button onclick="deleteCampaign()" class="btn btn-secondary">
+                    🗑 Excluir
+                </button>
+            </div>
+        </div>
+
+        <!-- Configurações -->
+        <div class="section">
+            <h3 style="margin-bottom: 1rem;">⚙️ Configurações</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <div class="label">Delay Mínimo</div>
+                    <div class="value">{{ campaign.delay_min }}s</div>
+                </div>
+                <div class="config-item">
+                    <div class="label">Delay Máximo</div>
+                    <div class="value">{{ campaign.delay_max }}s</div>
+                </div>
+                <div class="config-item">
+                    <div class="label">Limite/Hora</div>
+                    <div class="value">{{ campaign.max_per_hour }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template de Mensagem -->
+        <div class="section">
+            <h3 style="margin-bottom: 1rem;">💬 Template de Mensagem</h3>
+            <div class="message-template">{{ campaign.message_template }}</div>
+        </div>
+
+        <!-- Upload de Contatos -->
+        {% if campaign.status == 'created' %}
+        <div class="section">
+            <h3 style="margin-bottom: 1rem;">📤 Importar Contatos</h3>
+            <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">
+                    Clique ou arraste um arquivo CSV ou VCF aqui
+                </p>
+                <p style="color: #6b7280;">
+                    Formatos aceitos: CSV, TXT, VCF (vCard)
+                </p>
+            </div>
+            <input type="file" id="fileInput" accept=".csv,.txt,.vcf" style="display: none;">
+            <div id="uploadStatus" style="margin-top: 1rem;"></div>
+        </div>
+        {% endif %}
+
+        <!-- Lista de Mensagens -->
+        <div class="section">
+            <h3 style="margin-bottom: 1rem;">📋 Mensagens (últimas 100)</h3>
+            {% if messages %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Telefone</th>
+                        <th>Status</th>
+                        <th>Tentativas</th>
+                        <th>Enviado em</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for msg in messages %}
+                    <tr>
+                        <td>{{ msg.phone }}</td>
+                        <td>
+                            <span class="status-dot status-{{ msg.status }}"></span>
+                            {{ msg.status }}
+                        </td>
+                        <td>{{ msg.attempt_count }}</td>
+                        <td>
+                            {% if msg.sent_at %}
+                                {{ msg.sent_at.strftime('%d/%m %H:%M') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="text-align: center; color: #6b7280; padding: 2rem;">
+                Nenhuma mensagem importada ainda.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        const campaignId = {{ campaign.id }};
+
+        async function startCampaign() {
+            if (!confirm('Deseja iniciar o envio das mensagens?')) return;
+            
+            try {
+                const response = await fetch(`/api/campaigns/${campaignId}/start`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erro: ' + (data.detail || 'Erro ao iniciar'));
+                }
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        async function pauseCampaign() {
+            if (!confirm('Deseja pausar o envio?')) return;
+            
+            try {
+                await fetch(`/api/campaigns/${campaignId}/pause`, { method: 'POST' });
+                location.reload();
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        async function cancelCampaign() {
+            if (!confirm('Deseja cancelar esta campanha? Esta ação não pode ser desfeita.')) return;
+            
+            try {
+                await fetch(`/api/campaigns/${campaignId}/cancel`, { method: 'POST' });
+                location.reload();
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        async function deleteCampaign() {
+            if (!confirm('Tem certeza que deseja excluir esta campanha permanentemente?')) return;
+            
+            try {
+                await fetch(`/api/campaigns/${campaignId}`, { method: 'DELETE' });
+                window.location.href = '/';
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        // Upload de arquivo
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadStatus = document.getElementById('uploadStatus');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', handleDrop, false);
+        fileInput.addEventListener('change', handleFiles, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles({ target: { files: files } });
+        }
+
+        function handleFiles(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            uploadFile(file);
+        }
+
+        async function uploadFile(file) {
+            uploadStatus.innerHTML = '<p style="color: #667eea;">⏳ Enviando arquivo...</p>';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`/api/campaigns/${campaignId}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    uploadStatus.innerHTML = `
+                        <div style="background: #d1fae5; color: #065f46; padding: 1rem; border-radius: 6px;">
+                            ✅ <strong>${data.contacts_count}</strong> contatos importados com sucesso!
+                        </div>
+                    `;
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    uploadStatus.innerHTML = `
+                        <div style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 6px;">
+                            ❌ Erro: ${data.errors.join('<br>')}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                uploadStatus.innerHTML = `
+                    <div style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 6px;">
+                        ❌ Erro ao enviar: ${error.message}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
