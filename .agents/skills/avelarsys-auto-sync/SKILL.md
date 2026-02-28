@@ -21,6 +21,18 @@ Ativar quando o usuario usar frases de aprovacao/elogio apos uma alteracao de co
 - O script `push-all.sh` deve existir na raiz do projeto
 - Os remotes dos modulos devem estar configurados (remote-appportal, remote-avadmin, etc.)
 
+## Opcoes do push-all.sh
+
+| Comando | O que faz |
+|---------|-----------|
+| `./push-all.sh` | Push principal + sync todos os modulos |
+| `./push-all.sh --only-main` | Push so no repo principal |
+| `./push-all.sh --sync-only` | So sincroniza modulos (sem push principal) |
+| `./push-all.sh --force` | Force push em todos os modulos |
+| `./push-all.sh AppPortal` | Push principal + sync so o AppPortal |
+| `./push-all.sh --sync-only AppPortal` | Sync so o AppPortal, sem push principal |
+| `./push-all.sh --sync-only --force` | Force sync todos, sem push principal |
+
 ## Workflow
 
 ### 1. Verificar alteracoes pendentes
