@@ -6,9 +6,8 @@
 #   ./push-all.sh              (push principal + todos os modulos)
 #   ./push-all.sh --only-main  (push so no repo principal)
 #   ./push-all.sh AppPortal    (push principal + so AppPortal)
+#   ./push-all.sh --force      (force push em todos os modulos)
 # =====================================================
-
-set -e
 
 BRANCH="main"
 GREEN='\033[0;32m'
@@ -33,12 +32,22 @@ backups:remote-backups
 scripts:remote-scripts
 .agents:remote-agents"
 
+FORCE=false
+FILTER=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --only-main) ;;
+    --force) FORCE=true ;;
+    *) FILTER="$arg" ;;
+  esac
+done
+
 echo -e "${BLUE}======================================${NC}"
 echo -e "${BLUE}  AvelarSys - Sincronizacao Completa  ${NC}"
 echo -e "${BLUE}======================================${NC}"
 echo ""
 
-# 1. Push no repositorio principal
 echo -e "${YELLOW}[1/2] Enviando para o repositorio principal (AvelarSys)...${NC}"
 if git push origin "$BRANCH" 2>&1; then
   echo -e "${GREEN}  OK - AvelarSys atualizado${NC}"
@@ -53,38 +62,40 @@ if [ "$1" = "--only-main" ]; then
   exit 0
 fi
 
-# 2. Subtree push para cada modulo
 echo -e "${YELLOW}[2/2] Sincronizando modulos via subtree...${NC}"
 echo ""
 
-TOTAL=0
 SUCCESS=0
 FAILED=0
-SKIPPED=0
 
 echo "$MODULES" | while IFS=: read -r MODULE REMOTE; do
-  if [ -n "$1" ] && [ "$1" != "--only-main" ] && [ "$1" != "$MODULE" ]; then
+  if [ -n "$FILTER" ] && [ "$FILTER" != "$MODULE" ]; then
     continue
   fi
-
-  TOTAL=$((TOTAL + 1))
 
   if [ ! -d "$MODULE" ]; then
     echo -e "  ${YELLOW}[SKIP]${NC} $MODULE (pasta nao encontrada)"
-    SKIPPED=$((SKIPPED + 1))
     continue
   fi
 
-  echo -ne "  Sincronizando ${BLUE}$MODULE${NC} -> $REMOTE... "
+  BNAME="split-$(echo "$MODULE" | tr './' '--')"
+  echo -ne "  ${BLUE}$MODULE${NC} -> $REMOTE ... "
 
-  if git subtree push --prefix="$MODULE" "$REMOTE" "$BRANCH" 2>&1; then
-    echo -e "  ${GREEN}[OK]${NC} $MODULE"
-    SUCCESS=$((SUCCESS + 1))
+  if [ "$FORCE" = true ]; then
+    git subtree split --prefix="$MODULE" -b "$BNAME" > /dev/null 2>&1
+    if git push "$REMOTE" "$BNAME:$BRANCH" --force > /dev/null 2>&1; then
+      echo -e "${GREEN}[OK] (force)${NC}"
+    else
+      echo -e "${RED}[ERRO]${NC}"
+    fi
+    git branch -D "$BNAME" > /dev/null 2>&1
   else
-    echo -e "  ${RED}[ERRO]${NC} $MODULE"
-    FAILED=$((FAILED + 1))
+    if git subtree push --prefix="$MODULE" "$REMOTE" "$BRANCH" > /dev/null 2>&1; then
+      echo -e "${GREEN}[OK]${NC}"
+    else
+      echo -e "${RED}[ERRO]${NC}"
+    fi
   fi
-  echo ""
 done
 
 echo ""
