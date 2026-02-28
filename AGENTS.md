@@ -21,3 +21,26 @@ rule("Infraestrutura NGINX e DNS: Leitura automática de referência") {
   priority = "alta"
 }
 
+rule("Auto Sync: Commit e Push ao aprovar alterações") {
+  description = """
+  Quando o usuário aprovar, elogiar ou concordar com uma alteração de código realizada pelo agente,
+  executar automaticamente o fluxo de commit + push + sincronização subtree do monorepo AvelarSys.
+
+  O agente deve:
+  1. Ler a skill 'avelarsys-auto-sync' em .agents/skills/avelarsys-auto-sync/SKILL.md
+  2. Seguir o workflow descrito na skill (git add, commit, push-all.sh)
+
+  Frases de gatilho incluem (mas não se limitam a):
+  "perfeito", "ótimo", "gostei", "pode commitar", "sobe isso", "manda pro git",
+  "aprovado", "show", "beleza", "concordo", "isso aí", "tá bom", "manda bala",
+  "great", "perfect", "ship it", "lgtm", "push it", "commit this"
+  """
+  when = [
+    "Usuário aprova, elogia ou concorda com uma alteração de código que o agente acabou de realizar no projeto AvelarSys."
+  ]
+  action = [
+    "Ler a skill '/home/avelarsys/AvelarSys/.agents/skills/avelarsys-auto-sync/SKILL.md' e executar o workflow de commit + push + sincronização subtree."
+  ]
+  priority = "alta"
+}
+
