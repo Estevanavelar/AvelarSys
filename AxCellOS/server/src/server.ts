@@ -72,37 +72,46 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 const httpServer = http.createServer(app);
 initSocket(httpServer);
 
-async function start() {
-  await runMigrations();
-  httpServer.listen(config.server.port, () => {
-  console.log(`🚀 AxCellOS Backend server running on port ${config.server.port}`);
-  console.log(`📡 tRPC endpoint: http://localhost:${config.server.port}/trpc`);
-  console.log(`🔌 WebSocket: ws://localhost:${config.server.port}/socket.io`);
-  console.log(`🏥 Health check: http://localhost:${config.server.port}/health`);
-  });
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-start().catch((err) => {
-  console.error("Falha ao iniciar servidor:", err);
-  process.exit(1);
-});
+async function startWithRetry() {
+  const retryDelayMs = 5000;
+  let attempt = 0;
+
+  while (true) {
+    attempt += 1;
+    try {
+      await runMigrations();
+      httpServer.listen(config.server.port, () => {
+        console.log(`🚀 AxCellOS Backend server running on port ${config.server.port}`);
+        console.log(`📡 tRPC endpoint: http://localhost:${config.server.port}/trpc`);
+        console.log(`🔌 WebSocket: ws://localhost:${config.server.port}/socket.io`);
+        console.log(`🏥 Health check: http://localhost:${config.server.port}/health`);
+      });
+      return;
+    } catch (err) {
+      console.error(`Falha ao iniciar servidor (tentativa ${attempt}). Nova tentativa em ${retryDelayMs / 1000}s:`, err);
+      await sleep(retryDelayMs);
+    }
+  }
+}
+
+void startWithRetry();
 
 process.on("SIGTERM", () => {
   console.log("SIGTERM received, shutting down gracefully");
-  server.close(() => {
+  httpServer.close(() => {
     console.log("Process terminated");
   });
 });
 
 process.on("SIGINT", () => {
   console.log("SIGINT received, shutting down gracefully");
-  server.close(() => {
+  httpServer.close(() => {
     console.log("Process terminated");
   });
-});
-
-export { app };
-;
 });
 
 export { app };

@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc';
@@ -30,13 +29,10 @@ interface ReceiptPrinterProps {
 }
 
 export function ReceiptPrinter({ data, format }: ReceiptPrinterProps) {
-  const receiptRef = useRef<HTMLDivElement>(null);
   const { data: companySetting } = trpc.settings.getSetting.useQuery({ key: 'company' });
   const companyData = companySetting?.value as any;
 
   const handlePrint = () => {
-    if (!receiptRef.current) return;
-
     const company = {
       name: companyData?.name || 'AxCellOS',
       cnpj: companyData?.cnpj || '00.000.000/0000-00',
@@ -46,6 +42,16 @@ export function ReceiptPrinter({ data, format }: ReceiptPrinterProps) {
       state: companyData?.state || 'UF',
       zipCode: companyData?.zipCode || '00000-000',
     };
+    const paymentMethodLabel =
+      data.paymentMethod === 'cash'
+        ? 'Dinheiro'
+        : data.paymentMethod === 'credit'
+          ? 'Cartao de Credito'
+          : data.paymentMethod === 'debit'
+            ? 'Cartao de Debito'
+            : data.paymentMethod === 'pix'
+              ? 'PIX'
+              : data.paymentMethod;
 
     const printWindow = window.open('', '', 'height=600,width=800');
     if (!printWindow) return;
@@ -212,8 +218,14 @@ export function ReceiptPrinter({ data, format }: ReceiptPrinterProps) {
               </div>
               ${data.tax > 0 ? `
                 <div class="total-row">
-                  <span>Impostos:</span>
+                  <span>Taxa:</span>
                   <span>R$ ${data.tax.toFixed(2)}</span>
+                </div>
+              ` : ''}
+              ${data.netValue != null ? `
+                <div class="total-row">
+                  <span>Liquido:</span>
+                  <span>R$ ${data.netValue.toFixed(2)}</span>
                 </div>
               ` : ''}
               <div class="total-row grand-total">
@@ -224,7 +236,7 @@ export function ReceiptPrinter({ data, format }: ReceiptPrinterProps) {
 
             <div class="payment">
               <strong>Forma de Pagamento:</strong><br/>
-              ${data.paymentMethod.toUpperCase()}
+              ${paymentMethodLabel}${data.installments && data.installments > 1 ? ` (${data.installments}x)` : ''}
             </div>
 
             <div class="footer">

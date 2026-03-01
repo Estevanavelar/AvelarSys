@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useRef } from 'react';
 import { Home, FileText, Settings, LogOut, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/_core/hooks/useAuth';
@@ -21,6 +21,26 @@ export default function ResponsiveLayout({ children, activeTab = 'dashboard' }: 
   const companyName = useCompanyName();
   const displayName = companyName || user?.name?.split(' ')[0] || 'Usuário';
   const [, setLocation] = useLocation();
+  const prefetchedRoutesRef = useRef<Set<string>>(new Set());
+
+  const routePreloaders: Record<string, () => Promise<unknown>> = {
+    '/dashboard': () => import('@/pages/Dashboard'),
+    '/ordens': () => import('@/pages/Orders'),
+    '/pdv': () => import('@/pages/PDV'),
+    '/configuracoes': () => import('@/pages/Settings'),
+    '/relatorio-vendas': () => import('@/pages/SalesReport'),
+    '/relatorio-ordens': () => import('@/pages/OrdersReport'),
+  };
+
+  const prefetchRoute = (href: string) => {
+    if (prefetchedRoutesRef.current.has(href)) return;
+    const loader = routePreloaders[href];
+    if (!loader) return;
+    prefetchedRoutesRef.current.add(href);
+    void loader().catch(() => {
+      prefetchedRoutesRef.current.delete(href);
+    });
+  };
 
   if (!isAuthenticated) {
     return (
@@ -56,6 +76,10 @@ export default function ResponsiveLayout({ children, activeTab = 'dashboard' }: 
           <button
             key={item.id}
             onClick={() => setLocation(item.href)}
+            onMouseEnter={() => prefetchRoute(item.href)}
+            onFocus={() => prefetchRoute(item.href)}
+            onTouchStart={() => prefetchRoute(item.href)}
+            onPointerDown={() => prefetchRoute(item.href)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
               isActive
                 ? 'bg-primary text-primary-foreground font-semibold shadow-md'
@@ -137,6 +161,8 @@ export default function ResponsiveLayout({ children, activeTab = 'dashboard' }: 
             <button
               key={item.id}
               onClick={() => setLocation(item.href)}
+              onTouchStart={() => prefetchRoute(item.href)}
+              onPointerDown={() => prefetchRoute(item.href)}
               className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
                 isActive
                   ? 'text-primary'

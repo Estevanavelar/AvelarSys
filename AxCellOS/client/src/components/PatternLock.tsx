@@ -14,10 +14,34 @@ for (let row = 0; row < 3; row++) {
   }
 }
 
-/** Verifica se a string é um padrão Android (apenas dígitos 1-9, 4-9 caracteres) */
+const PATTERN_PREFIX = 'pattern:';
+
+/** Salva o padrão com prefixo explícito para não confundir com PIN numérico. */
+export function encodePatternLock(value: string): string {
+  return `${PATTERN_PREFIX}${value}`;
+}
+
+/** Retorna apenas a sequência de pontos do padrão, quando aplicável. */
+export function getPatternLockSequence(value: string): string | null {
+  if (!value) return null;
+  const prefixed = value.startsWith(PATTERN_PREFIX) ? value.slice(PATTERN_PREFIX.length) : value;
+  if (prefixed.length < 4 || prefixed.length > 9) return null;
+  if (!/^[1-9]+$/.test(prefixed)) return null;
+  if (new Set(prefixed).size !== prefixed.length) return null;
+
+  // Novo formato: sempre com prefixo.
+  if (value.startsWith(PATTERN_PREFIX)) return prefixed;
+
+  // Compatibilidade legada (sem prefixo): só aceita sequências mais longas para reduzir
+  // falso positivo com PIN de 4-6 dígitos.
+  if (prefixed.length >= 7) return prefixed;
+
+  return null;
+}
+
+/** Verifica se o valor representa um padrão Android. */
 export function isPatternLock(value: string): boolean {
-  if (!value || value.length < 4 || value.length > 9) return false;
-  return /^[1-9]+$/.test(value);
+  return getPatternLockSequence(value) !== null;
 }
 
 interface PatternLockProps {
@@ -123,7 +147,8 @@ export default function PatternLock({ value, onChange, readOnly = false }: Patte
     document.addEventListener('touchcancel', endHandler);
   }, [onStart, onMove, onEnd]);
 
-  const seq = value.split('').map(Number).filter((d) => d >= 1 && d <= 9);
+  const normalizedValue = getPatternLockSequence(value) ?? value;
+  const seq = normalizedValue.split('').map(Number).filter((d) => d >= 1 && d <= 9);
   const dotById = (id: number) => DOTS.find((d) => d.id === id)!;
   const lastDot = seq.length > 0 ? dotById(seq[seq.length - 1]) : null;
 

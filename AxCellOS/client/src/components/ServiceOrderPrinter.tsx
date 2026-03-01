@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ServiceOrder } from '@/contexts/OrdersContext';
 import { trpc } from '@/lib/trpc';
 import { formatPhoneBR } from '@/lib/utils';
-import { isPatternLock } from './PatternLock';
+import { getPatternLockSequence } from './PatternLock';
 
 /** Gera SVG do padrão para impressão (grid 3x3, ids 1-9) com ordem numerada */
 function patternSvgForPrint(pattern: string, size = 80): string {
@@ -83,29 +83,32 @@ export function ServiceOrderPrinter({ order }: ServiceOrderPrinterProps) {
             .os-info h2 { font-size: 20px; color: #666; }
             .os-info p { font-size: 14px; font-weight: bold; margin-top: 2mm; }
             
-            .section { margin-bottom: 6mm; }
-            .section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; background: #eee; padding: 2mm; margin-bottom: 3mm; border-left: 4px solid #000; }
+            .section { margin-bottom: 4mm; }
+            .section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; background: #eee; padding: 2mm; margin-bottom: 2mm; border-left: 4px solid #000; }
             
-            .grid { display: grid; grid-template-cols: 1fr 1px 1fr; gap: 5mm; }
-            .col { padding: 0 2mm; }
+            .sections-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-bottom: 4mm; }
+            .sections-row .section { margin-bottom: 0; }
+            
+            .grid { display: grid; grid-template-cols: 1fr 1fr; gap: 4mm; }
+            .col { padding: 0; }
             .divider { background: #ddd; }
             
-            .field { margin-bottom: 3mm; }
+            .field { margin-bottom: 2mm; }
             .label { font-size: 10px; font-weight: bold; color: #777; text-transform: uppercase; }
             .value { font-size: 13px; font-weight: bold; }
             
-            .details-table { width: 100%; border-collapse: collapse; margin-top: 4mm; }
+            .details-table { width: 100%; border-collapse: collapse; margin-top: 2mm; }
             .details-table th { text-align: left; font-size: 11px; padding: 2mm; border-bottom: 1px solid #000; }
-            .details-table td { padding: 3mm 2mm; border-bottom: 1px solid #eee; font-size: 12px; }
+            .details-table td { padding: 2mm; border-bottom: 1px solid #eee; font-size: 12px; }
             
-            .footer { margin-top: 15mm; border-top: 1px solid #ddd; pt: 5mm; }
-            .signatures { display: grid; grid-template-cols: 1fr 1fr; gap: 20mm; margin-top: 15mm; }
-            .signature-line { border-top: 1px solid #000; text-align: center; padding-top: 2mm; font-size: 11px; }
-            .terms-section { margin-bottom: 6mm; }
-            .term-block { margin-bottom: 4mm; }
-            .term-title { font-size: 12px; font-weight: bold; margin-bottom: 2mm; }
-            .term-content { font-size: 11px; line-height: 1.4; }
-            .term-content ul, .term-content ol { margin: 2mm 0 2mm 5mm; padding-left: 4mm; }
+            .footer { margin-top: 10mm; border-top: 1px solid #ddd; pt: 3mm; }
+            .signatures { display: grid; grid-template-cols: 1fr 1fr; gap: 15mm; margin-top: 12mm; }
+            .signature-line { border-top: 1px solid #000; text-align: center; padding-top: 1mm; font-size: 11px; }
+            .terms-section { margin-bottom: 4mm; }
+            .term-block { margin-bottom: 2mm; }
+            .term-title { font-size: 12px; font-weight: bold; margin-bottom: 1mm; }
+            .term-content { font-size: 11px; line-height: 1.3; }
+            .term-content ul, .term-content ol { margin: 1mm 0 1mm 4mm; padding-left: 3mm; }
             .term-content strong { font-weight: bold; }
             
             @media print {
@@ -130,95 +133,115 @@ export function ServiceOrderPrinter({ order }: ServiceOrderPrinterProps) {
             </div>
           </div>
 
-          <div class="section">
-            <div class="section-title">Dados do Cliente</div>
-            <div class="grid">
-              <div class="col">
-                <div class="field">
-                  <div class="label">Nome / Razão Social</div>
-                  <div class="value">${order.customerName}</div>
+          <div class="sections-row">
+            <div class="section">
+              <div class="section-title">Dados do Cliente</div>
+              <div class="grid">
+                <div class="col">
+                  <div class="field">
+                    <div class="label">Nome / Razão Social</div>
+                    <div class="value">${order.customerName}</div>
+                  </div>
                 </div>
-                <div class="field">
-                  <div class="label">Telefone / WhatsApp</div>
-                  <div class="value">${order.customerPhone}</div>
+                <div class="col">
+                  <div class="field">
+                    <div class="label">Telefone / WhatsApp</div>
+                    <div class="value">${order.customerPhone}</div>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <div class="section">
+              <div class="section-title">Equipamento / Dispositivo</div>
+              <div class="grid">
+                <div class="col">
+                  <div class="field">
+                    <div class="label">Marca / Modelo</div>
+                    <div class="value">${order.deviceBrand} ${order.deviceModel}</div>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="field">
+                    <div class="label">Defeito Relatado</div>
+                    <div class="value" style="font-size: 12px;">${order.defect.length > 60 ? order.defect.substring(0, 60) + '...' : order.defect}</div>
+                  </div>
+                </div>
+              </div>
+              ${order.warrantyUntil ? `
+              <div class="field" style="margin-top: 1mm;">
+                <div class="label">Garantia</div>
+                <div class="value">Válida até ${new Date(order.warrantyUntil).toLocaleDateString('pt-BR')}</div>
+              </div>
+              ` : ''}
+            </div>
           </div>
 
+          ${order.devicePassword || order.notes?.match(/Checklist:\s*Sinal de vida/) ? `
           <div class="section">
-            <div class="section-title">Equipamento / Dispositivo</div>
-            <div class="grid">
-              <div class="col">
+            <div class="section-title">Informações Adicionais</div>
+            <div style="display: flex; flex-direction: row; gap: 8mm; align-items: flex-start;">
+              <div style="flex: 0 0 auto; min-width: 0;">
+                ${order.devicePassword ? `
                 <div class="field">
-                  <div class="label">Marca / Modelo</div>
-                  <div class="value">${order.deviceBrand} ${order.deviceModel}</div>
-                </div>
-                <div class="field">
-                  <div class="label">Defeito Relatado</div>
-                  <div class="value">${order.defect}</div>
-                </div>
-                ${order.warrantyUntil ? `
-                <div class="field">
-                  <div class="label">Garantia</div>
-                  <div class="value">Válida até ${new Date(order.warrantyUntil).toLocaleDateString('pt-BR')}</div>
+                  <div class="label">Senha do aparelho (PIN / padrão)</div>
+                  ${(() => {
+                    const patternValue = getPatternLockSequence(order.devicePassword);
+                    return patternValue
+                      ? `<div style="margin-top: 1mm;">${patternSvgForPrint(patternValue)}</div>`
+                    : `<div class="value" style="letter-spacing: 0.15em;">${String(order.devicePassword).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`
+                  })()}
                 </div>
                 ` : ''}
               </div>
+              <div style="flex: 1 1 auto; min-width: 0;">
+                ${(function() {
+                  const m = order.notes?.match(/Checklist:\s*Sinal de vida:\s*(\S+)\s*\|\s*Consumo carga:\s*(\S+)\s*\|\s*Sem chip[^:]*:\s*(\S+)/i);
+                  if (!m) return '';
+                  const [, life, charge, accessories] = m;
+                  const fmt = (v: string) => (v === 'sim' || v === 'nao' ? v.charAt(0).toUpperCase() + v.slice(1) : v || '-');
+                  return `
+                <div class="field">
+                  <div class="label" style="margin-bottom: 1mm;">Checklist Rápido</div>
+                  <div style="font-size: 11px; line-height: 1.5;">
+                    <div style="padding: 1mm 0;"><strong>Sinal de vida?</strong> ${fmt(life)}</div>
+                    <div style="padding: 1mm 0;"><strong>Consumo de carga?</strong> ${fmt(charge)}</div>
+                    <div style="padding: 1mm 0;"><strong>Sem chip?</strong> ${fmt(accessories)}</div>
+                  </div>
+                </div>
+                `;
+                })()}
+              </div>
             </div>
-            ${order.devicePassword ? `
-            <div class="field" style="margin-top: 4mm;">
-              <div class="label">Senha do aparelho (PIN / padrão)</div>
-              ${isPatternLock(order.devicePassword)
-                ? `<div style="margin-top: 2mm;">${patternSvgForPrint(order.devicePassword)}</div>`
-                : `<div class="value" style="letter-spacing: 0.15em;">${String(order.devicePassword).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`
-              }
-            </div>
-            ` : ''}
+          </div>
+          ` : ''}
+
+          <div class="sections-row">
             ${(function() {
-              const m = order.notes?.match(/Checklist:\s*Sinal de vida:\s*(\S+)\s*\|\s*Consumo carga:\s*(\S+)\s*\|\s*Sem chip[^:]*:\s*(\S+)/i);
-              if (!m) return '';
-              const [, life, charge, accessories] = m;
-              const fmt = (v: string) => (v === 'sim' || v === 'nao' ? v.charAt(0).toUpperCase() + v.slice(1) : v || '-');
+              const m = order.notes?.match(/(?:Peças|Pecas):\s*(.+?)(?:\s*\||$)/i);
+              const parts = m?.[1]?.split(',').map(s => s.trim()).filter(Boolean) ?? [];
+              if (parts.length === 0) return '';
+              const esc = (x: string) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
               return `
-            <div class="field" style="margin-top: 6mm; padding-top: 4mm; border-top: 1px solid #eee;">
-              <div class="label" style="margin-bottom: 3mm;">Checklist Rápido</div>
-              <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
-                <tr>
-                  <td style="padding: 2mm 6mm 2mm 0;"><strong>Sinal de vida?</strong> ${fmt(life)}</td>
-                  <td style="padding: 2mm 6mm 2mm 0;"><strong>Consumo de carga?</strong> ${fmt(charge)}</td>
-                  <td style="padding: 2mm 0;"><strong>Sem chip/cartão/capa?</strong> ${fmt(accessories)}</td>
-                </tr>
-              </table>
-            </div>
-            `;
+              <div class="section">
+                <div class="section-title">Peças Solicitadas</div>
+                <ul style="list-style: disc; padding-left: 4mm; font-size: 12px; margin: 1mm 0;">
+                  ${parts.map(p => `<li>${esc(p)}</li>`).join('')}
+                </ul>
+              </div>
+              `;
             })()}
-          </div>
 
-          ${(function() {
-            const m = order.notes?.match(/(?:Peças|Pecas):\s*(.+?)(?:\s*\||$)/i);
-            const parts = m?.[1]?.split(',').map(s => s.trim()).filter(Boolean) ?? [];
-            if (parts.length === 0) return '';
-            const esc = (x: string) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            return `
-          <div class="section">
-            <div class="section-title">Peças Solicitadas</div>
-            <ul style="list-style: disc; padding-left: 5mm; font-size: 12px;">
-              ${parts.map(p => `<li>${esc(p)}</li>`).join('')}
-            </ul>
-          </div>
-          `;
-          })()}
-
-          <div class="section">
-            <div class="section-title">Resumo Financeiro</div>
-            <div class="field">
-              <div class="label">Valor Total</div>
-              <div class="value" style="font-size: 16px;">${order.totalValue != null ? `R$ ${Number(order.totalValue).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : (order.estimatedCost || 'R$ 0,00')}</div>
-            </div>
-            <div class="field" style="margin-top: 2mm;">
-              <div class="label">Forma de Pagamento</div>
-              <div class="value">${order.paymentInfo?.method ? String(order.paymentInfo.method).charAt(0).toUpperCase() + String(order.paymentInfo.method).slice(1).toLowerCase() : 'A definir'}</div>
+            <div class="section">
+              <div class="section-title">Resumo Financeiro</div>
+              <div class="field">
+                <div class="label">Valor Total</div>
+                <div class="value" style="font-size: 16px;">${order.totalValue != null ? `R$ ${Number(order.totalValue).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : (order.estimatedCost || 'R$ 0,00')}</div>
+              </div>
+              <div class="field" style="margin-top: 2mm;">
+                <div class="label">Forma de Pagamento</div>
+                <div class="value">${order.paymentInfo?.method ? String(order.paymentInfo.method).charAt(0).toUpperCase() + String(order.paymentInfo.method).slice(1).toLowerCase() : 'A definir'}</div>
+              </div>
             </div>
           </div>
 

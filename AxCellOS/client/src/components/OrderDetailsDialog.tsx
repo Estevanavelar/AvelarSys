@@ -16,7 +16,7 @@ import EditStatusDialog from './EditStatusDialog';
 import { ServiceOrderPrinter } from './ServiceOrderPrinter';
 import PaymentDialog from './PaymentDialog';
 import { ReceiptPrinter, ReceiptData } from './ReceiptPrinter';
-import PatternLock, { isPatternLock } from './PatternLock';
+import PatternLock, { getPatternLockSequence } from './PatternLock';
 import { useOrders } from '@/contexts/OrdersContext';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
@@ -59,6 +59,8 @@ export default function OrderDetailsDialog({ order, open, onOpenChange }: OrderD
       refetchOnWindowFocus: false,
     }
   );
+
+  const { data: warrantyTermsList = [] } = trpc.settings.getWarrantyTerms.useQuery();
 
   const customerPhone = order?.customerPhone || customerQuery.data?.whatsapp || '';
   const whatsappDigits = customerPhone.replace(/\D/g, '');
@@ -309,14 +311,18 @@ export default function OrderDetailsDialog({ order, open, onOpenChange }: OrderD
                         {order.warrantyTermIds && order.warrantyTermIds.length > 0 && (
                           <div className="space-y-1 md:col-span-2">
                             <p className="text-xs text-muted-foreground font-bold uppercase flex items-center gap-1">
-                              <FileCheckIcon className="w-3.5 h-3.5" /> Termos de Garantia (IDs referenciados)
+                              <FileCheckIcon className="w-3.5 h-3.5" /> Termos de Garantia
                             </p>
                             <div className="flex flex-wrap gap-2">
-                              {order.warrantyTermIds.map((id) => (
-                                <Badge key={id} variant="secondary" className="font-mono text-xs">
-                                  {id}
-                                </Badge>
-                              ))}
+                              {order.warrantyTermIds.map((id) => {
+                                const term = warrantyTermsList.find((t) => t.id === id);
+                                const label = term?.title ?? id;
+                                return (
+                                  <Badge key={id} variant="secondary" className="text-xs" title={term ? undefined : `ID: ${id}`}>
+                                    {label}
+                                  </Badge>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -350,15 +356,21 @@ export default function OrderDetailsDialog({ order, open, onOpenChange }: OrderD
                       {order.devicePassword && (
                         <div className="space-y-2">
                           <p className="text-xs text-muted-foreground font-bold uppercase">Senha do aparelho (PIN / padrão)</p>
-                          {isPatternLock(order.devicePassword) ? (
-                            <div className="bg-background/50 border rounded-xl p-4 inline-block">
-                              <PatternLock value={order.devicePassword} readOnly />
-                            </div>
-                          ) : (
-                            <p className="bg-background/50 border rounded-xl p-4 text-lg font-mono font-bold tracking-widest text-foreground">
-                              {order.devicePassword}
-                            </p>
-                          )}
+                          {(() => {
+                            const patternValue = getPatternLockSequence(order.devicePassword);
+                            if (patternValue) {
+                              return (
+                                <div className="bg-background/50 border rounded-xl p-4 inline-block">
+                                  <PatternLock value={patternValue} readOnly />
+                                </div>
+                              );
+                            }
+                            return (
+                              <p className="bg-background/50 border rounded-xl p-4 text-lg font-mono font-bold tracking-widest text-foreground">
+                                {order.devicePassword}
+                              </p>
+                            );
+                          })()}
                         </div>
                       )}
 

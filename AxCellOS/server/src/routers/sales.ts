@@ -46,7 +46,7 @@ export const salesRouter = router({
       }
 
       if (input.dateTo) {
-        conditions.push(sql`${sales.createdAt} <= ${input.dateTo}`);
+        conditions.push(sql`${sales.createdAt} < (${input.dateTo}::date + interval '1 day')`);
       }
 
       const salesList = await db
@@ -181,6 +181,15 @@ export const salesRouter = router({
       }
 
       const sale = await db.transaction(async (tx) => {
+        const saleItemsSnapshot = input.items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          discount: item.discount,
+          totalPrice: item.unitPrice * item.quantity - item.discount,
+          notes: item.notes ?? null,
+        }));
+
         const newSale = await tx
           .insert(sales)
           .values({
@@ -197,6 +206,7 @@ export const salesRouter = router({
             feeAmount: (input.feeAmount ?? 0).toString(),
             feePercent: (input.feePercent ?? 0).toString(),
             netValue: input.netValue != null ? input.netValue.toString() : null,
+            items: saleItemsSnapshot,
             notes: input.notes,
           })
           .returning();
@@ -359,7 +369,7 @@ export const salesRouter = router({
             eq(sales.ownerCpf, ctx.account!.owner_cpf!),
             eq(sales.paymentStatus, "paid"),
             sql`${sales.createdAt} >= ${input.dateFrom}`,
-            sql`${sales.createdAt} <= ${input.dateTo}`
+            sql`${sales.createdAt} < (${input.dateTo}::date + interval '1 day')`
           )
         )
         .groupBy(sql`to_char(${sales.createdAt}, ${dateFormat})`)
@@ -390,7 +400,7 @@ export const salesRouter = router({
       }
 
       if (input.dateTo) {
-        conditions.push(sql`${sales.createdAt} <= ${input.dateTo}`);
+        conditions.push(sql`${sales.createdAt} < (${input.dateTo}::date + interval '1 day')`);
       }
 
       const result = await db

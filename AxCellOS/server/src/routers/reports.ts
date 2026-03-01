@@ -22,7 +22,7 @@ export const reportsRouter = router({
     .query(async ({ ctx, input }) => {
       const salesConditions = [
         eq(sales.ownerCpf, ctx.account!.owner_cpf!),
-        eq(sales.status, "completed"),
+        eq(sales.paymentStatus, "paid"),
       ];
 
       const ordersConditions = [
@@ -36,8 +36,8 @@ export const reportsRouter = router({
       }
 
       if (input.dateTo) {
-        salesConditions.push(sql`${sales.createdAt} <= ${input.dateTo}`);
-        ordersConditions.push(sql`${orders.createdAt} <= ${input.dateTo}`);
+        salesConditions.push(sql`${sales.createdAt} < (${input.dateTo}::date + interval '1 day')`);
+        ordersConditions.push(sql`${orders.createdAt} < (${input.dateTo}::date + interval '1 day')`);
       }
 
       const salesStats = await db
@@ -103,9 +103,9 @@ export const reportsRouter = router({
     .query(async ({ ctx, input }) => {
       const conditions = [
         eq(sales.ownerCpf, ctx.account!.owner_cpf!),
-        eq(sales.status, "completed"),
+        eq(sales.paymentStatus, "paid"),
         sql`${sales.createdAt} >= ${input.dateFrom}`,
-        sql`${sales.createdAt} <= ${input.dateTo}`,
+        sql`${sales.createdAt} < (${input.dateTo}::date + interval '1 day')`,
       ];
 
       const salesData = await db
@@ -153,7 +153,7 @@ export const reportsRouter = router({
       const conditions = [
         eq(orders.ownerCpf, ctx.account!.owner_cpf!),
         sql`${orders.createdAt} >= ${input.dateFrom}`,
-        sql`${orders.createdAt} <= ${input.dateTo}`,
+        sql`${orders.createdAt} < (${input.dateTo}::date + interval '1 day')`,
       ];
 
       const ordersData = await db
@@ -204,7 +204,7 @@ export const reportsRouter = router({
     .query(async ({ ctx, input }) => {
       const salesConditions = [
         eq(sales.ownerCpf, ctx.account!.owner_cpf!),
-        eq(sales.status, "completed"),
+        eq(sales.paymentStatus, "paid"),
       ];
 
       if (input.dateFrom) {
@@ -212,7 +212,7 @@ export const reportsRouter = router({
       }
 
       if (input.dateTo) {
-        salesConditions.push(sql`${sales.createdAt} <= ${input.dateTo}`);
+        salesConditions.push(sql`${sales.createdAt} < (${input.dateTo}::date + interval '1 day')`);
       }
 
       const topProducts = await db
@@ -273,7 +273,7 @@ export const reportsRouter = router({
           type: sql<string>`'sale'`,
           date: sales.createdAt,
           amount: sales.totalAmount,
-          status: sales.status,
+          status: sales.paymentStatus,
           paymentMethod: sales.paymentMethod,
         })
         .from(sales)

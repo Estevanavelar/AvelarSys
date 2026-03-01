@@ -14,6 +14,7 @@ import OrderDetailsDialog from '@/components/OrderDetailsDialog';
 import { useOrders, ServiceOrder } from '@/contexts/OrdersContext';
 import { useProducts } from '@/contexts/ProductsContext';
 import { useCustomers } from '@/contexts/CustomersContext';
+import { trpc } from '@/lib/trpc';
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -27,6 +28,11 @@ export default function Dashboard() {
   const { orders, getOrderById } = useOrders();
   const { products } = useProducts();
   const { customers } = useCustomers();
+  const { data: pdvSales = [] } = trpc.sales.getSales.useQuery({
+    paymentStatus: 'paid',
+    limit: 500,
+    offset: 0,
+  });
 
   // Dados reais para as métricas
   const metrics = useMemo(() => {
@@ -39,7 +45,11 @@ export default function Dashboard() {
         o.createdAt.toLocaleDateString('pt-BR') === today
     );
 
-    const todayGross = deliveredToday.reduce((acc, o) => acc + (o.totalValue || 0), 0);
+    const todayOrdersGross = deliveredToday.reduce((acc, o) => acc + (o.totalValue || 0), 0);
+    const todayPdvGross = pdvSales
+      .filter((s: any) => new Date(s.createdAt).toLocaleDateString('pt-BR') === today)
+      .reduce((acc: number, s: any) => acc + Number(s.totalAmount || 0), 0);
+    const todayGross = todayOrdersGross + todayPdvGross;
     const todayNet = todayGross;
 
     const deliveredThisMonth = orders.filter(
@@ -48,7 +58,15 @@ export default function Dashboard() {
         o.createdAt.getMonth() === thisMonth
     );
 
-    const monthlyGross = deliveredThisMonth.reduce((acc, o) => acc + (o.totalValue || 0), 0);
+    const monthlyOrdersGross = deliveredThisMonth.reduce((acc, o) => acc + (o.totalValue || 0), 0);
+    const currentYear = new Date().getFullYear();
+    const monthlyPdvGross = pdvSales
+      .filter((s: any) => {
+        const d = new Date(s.createdAt);
+        return d.getMonth() === thisMonth && d.getFullYear() === currentYear;
+      })
+      .reduce((acc: number, s: any) => acc + Number(s.totalAmount || 0), 0);
+    const monthlyGross = monthlyOrdersGross + monthlyPdvGross;
 
     const totalFees = 0;
 
@@ -73,10 +91,19 @@ export default function Dashboard() {
       activeOrders: orders.filter(o => o.status !== 'Entregue' && o.status !== 'Cancelado').length,
       warrantyEndingSoon
     };
-  }, [orders, products, customers]);
+  }, [orders, products, customers, pdvSales]);
 
   // Dados para o gráfico de faturamento (últimos 7 dias) — barras
   const chartData = useMemo(() => {
+    const pdvByDay = new Map<string, { totalAmount: number; totalSales: number }>();
+    pdvSales.forEach((s: any) => {
+      const key = new Date(s.createdAt).toLocaleDateString('pt-BR');
+      const current = pdvByDay.get(key) || { totalAmount: 0, totalSales: 0 };
+      current.totalAmount += Number(s.totalAmount || 0);
+      current.totalSales += 1;
+      pdvByDay.set(key, current);
+    });
+
     const data = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -87,16 +114,18 @@ export default function Dashboard() {
       const deliveredThatDay = orders.filter(
         (o) => o.status === 'Entregue' && o.createdAt.toLocaleDateString('pt-BR') === fullDateStr
       );
-      const faturamento = deliveredThatDay.reduce((acc, o) => acc + (o.totalValue || 0), 0);
+      const ordersValue = deliveredThatDay.reduce((acc, o) => acc + (o.totalValue || 0), 0);
+      const pdvValue = pdvByDay.get(fullDateStr)?.totalAmount || 0;
+      const faturamento = ordersValue + pdvValue;
 
       data.push({
         name: dateStr,
         faturamento,
-        entregas: deliveredThatDay.length,
+        entregas: deliveredThatDay.length + (pdvByDay.get(fullDateStr)?.totalSales || 0),
       });
     }
     return data;
-  }, [orders]);
+  }, [orders, pdvSales]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {

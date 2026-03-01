@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { 
   ShoppingCart, Plus, Trash2, DollarSign, CreditCard, 
-  RefreshCw, Check, ImageIcon, Smile 
+  RefreshCw, Check, ImageIcon, Smile, History 
 } from 'lucide-react';
 import ResponsiveLayout from '@/components/ResponsiveLayout';
 import CreateProductDialog from '@/components/CreateProductDialog';
@@ -49,6 +49,7 @@ export default function PDV() {
   const { products, updateProduct, refreshProducts } = useProducts();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCreateProduct, setShowCreateProduct] = useState(false);
+  const [showSalesHistory, setShowSalesHistory] = useState(false);
   const [showLinkCustomer, setShowLinkCustomer] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -69,6 +70,14 @@ export default function PDV() {
     }
   }, [feesSetting?.value]);
   const createSaleMutation = trpc.sales.createSale.useMutation();
+  const {
+    data: pdvSales = [],
+    isLoading: isLoadingSalesHistory,
+    refetch: refetchSalesHistory,
+  } = trpc.sales.getSales.useQuery(
+    { limit: 100, offset: 0 },
+    { enabled: showSalesHistory }
+  );
 
   const calculateNetValue = (total: number, method: string, inst: number) => {
     if (!feeSettings) return { net: total, fee: 0, percent: 0 };
@@ -202,6 +211,24 @@ export default function PDV() {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const netInfo = calculateNetValue(total, paymentMethod, installments);
+  const salesHistoryTotal = useMemo(
+    () => pdvSales.reduce((sum: number, sale: any) => sum + Number(sale.totalAmount || 0), 0),
+    [pdvSales]
+  );
+
+  const paymentMethodLabel = (method?: string) => {
+    if (method === 'cash') return 'Dinheiro';
+    if (method === 'pix') return 'PIX';
+    if (method === 'debit') return 'Débito';
+    if (method === 'credit') return 'Crédito';
+    return method || 'Indefinido';
+  };
+
+  const paymentStatusLabel = (status?: string) => {
+    if (status === 'paid') return 'Pago';
+    if (status === 'refunded') return 'Estornado';
+    return status || 'Indefinido';
+  };
 
   const handleCheckout = () => {
     if (cart.length === 0) {
@@ -241,7 +268,7 @@ export default function PDV() {
       };
 
       try {
-        await createSaleMutation.mutateAsync({
+        const createdSale = await createSaleMutation.mutateAsync({
           customerId: cleanCustomerCPF.length === 11 ? cleanCustomerCPF : undefined,
           items: cart.map((item) => ({
             productId: item.id,
@@ -258,7 +285,12 @@ export default function PDV() {
           netValue: netInfo.net,
         });
 
-        setLastSaleData(updatedSaleData);
+        setLastSaleData({
+          ...updatedSaleData,
+          // Usa o id real da venda para impressão do cupom.
+          id: createdSale.id,
+          date: new Date(createdSale.createdAt),
+        });
         setShowReceipt(true);
         setCart([]);
         await refreshProducts();
@@ -333,13 +365,23 @@ export default function PDV() {
             <h1 className="text-3xl font-bold text-foreground">🛍️ Ponto de Venda</h1>
             <p className="text-muted-foreground mt-1">Gerencie suas vendas com facilidade</p>
           </div>
-          <Button
-            onClick={() => setShowCreateProduct(true)}
-            className="gap-2 bg-amber-600 hover:bg-amber-700 rounded-full"
-          >
-            <Plus className="w-5 h-5" />
-            Novo Produto
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowSalesHistory(true)}
+              className="gap-2 rounded-full"
+            >
+              <History className="w-5 h-5" />
+              Histórico de Vendas
+            </Button>
+            <Button
+              onClick={() => setShowCreateProduct(true)}
+              className="gap-2 bg-amber-600 hover:bg-amber-700 rounded-full"
+            >
+              <Plus className="w-5 h-5" />
+              Novo Produto
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -593,6 +635,73 @@ export default function PDV() {
         open={showCreateProduct}
         onOpenChange={setShowCreateProduct}
       />
+
+      {/* Dialog Histórico de Vendas do PDV */}
+      <Dialog open={showSalesHistory} onOpenChange={setShowSalesHistory}>
+        <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh]">
+          <DialogHeader>
+            <DialogTitle>🧾 Histórico de Vendas do PDV</DialogTitle>
+            <DialogDescription>
+              Últimas 100 vendas registradas no PDV
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between bg-muted/30 rounded-xl p-3">
+              <div>
+                <p className="text-[10px] uppercase font-black text-muted-foreground">Total de vendas listadas</p>
+                <p className="text-lg font-black">{pdvSales.length}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] uppercase font-black text-muted-foreground">Valor acumulado</p>
+                <p className="text-lg font-black text-green-600">R$ {salesHistoryTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+              </div>
+            </div>
+
+            <div className="max-h-[58vh] overflow-auto rounded-xl border">
+              {isLoadingSalesHistory ? (
+                <div className="p-6 text-sm text-muted-foreground">Carregando histórico...</div>
+              ) : pdvSales.length === 0 ? (
+                <div className="p-6 text-sm text-muted-foreground">Nenhuma venda encontrada.</div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-card border-b">
+                    <tr>
+                      <th className="text-left p-3 font-black text-[10px] uppercase text-muted-foreground">Venda</th>
+                      <th className="text-left p-3 font-black text-[10px] uppercase text-muted-foreground">Data</th>
+                      <th className="text-left p-3 font-black text-[10px] uppercase text-muted-foreground">Pagamento</th>
+                      <th className="text-left p-3 font-black text-[10px] uppercase text-muted-foreground">Status</th>
+                      <th className="text-right p-3 font-black text-[10px] uppercase text-muted-foreground">Valor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pdvSales.map((sale: any) => (
+                      <tr key={sale.id} className="border-b last:border-b-0">
+                        <td className="p-3 font-mono text-xs">{String(sale.id).slice(0, 8).toUpperCase()}</td>
+                        <td className="p-3">{new Date(sale.createdAt).toLocaleString('pt-BR')}</td>
+                        <td className="p-3">{paymentMethodLabel(sale.paymentMethod)}</td>
+                        <td className="p-3">{paymentStatusLabel(sale.paymentStatus)}</td>
+                        <td className="p-3 text-right font-bold">
+                          R$ {Number(sale.totalAmount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => refetchSalesHistory()}>
+              Atualizar
+            </Button>
+            <Button onClick={() => setShowSalesHistory(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog Vincular Cliente */}
       <LinkCustomerDialog

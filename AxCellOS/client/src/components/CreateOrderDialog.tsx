@@ -15,9 +15,9 @@ import { useOrders, ServiceOrder } from '@/contexts/OrdersContext';
 import { trpc } from '@/lib/trpc';
 import { toast } from 'sonner';
 import { listAddresses, createPurchaseOrder } from '@/lib/stocktech';
-import { formatCpf, formatPhone, stripHtml } from '@/lib/utils';
+import { formatCpf, formatPhone } from '@/lib/utils';
 import StockTechPartsSelector, { type SelectedPart } from './StockTechPartsSelector';
-import PatternLock from './PatternLock';
+import PatternLock, { encodePatternLock } from './PatternLock';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface CreateOrderDialogProps {
@@ -27,6 +27,7 @@ interface CreateOrderDialogProps {
 
 export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDialogProps) {
   const { addOrder } = useOrders();
+  const utils = trpc.useUtils();
   const createFinalCustomer = trpc.customers.createFinalCustomer.useMutation();
   const createCustomerDevice = trpc.devices.createCustomerDevice.useMutation();
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
@@ -199,7 +200,12 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
       warrantyUntil,
       totalValue: computedTotal,
       emoji: '🛠️',
-      devicePassword: (formData.devicePattern || formData.devicePassword) || undefined,
+      devicePassword: (() => {
+        const typedPassword = formData.devicePassword.trim();
+        if (typedPassword) return typedPassword;
+        if (formData.devicePattern) return encodePatternLock(formData.devicePattern);
+        return undefined;
+      })(),
       notes: [
         customerQuery.data?.name ? `Cliente: ${customerQuery.data.name}` : null,
         customerQuery.data?.whatsapp ? `WhatsApp: ${customerQuery.data.whatsapp}` : null,
@@ -238,6 +244,8 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
       // Snapshot das peças para processar compra sem depender do estado atual do formulário.
       const partsSnapshot = [...selectedParts];
       const orderNumber = created?.orderNumber ?? "";
+      // CPF usado na ordem — guardado antes de limpar o form para o refetch em background.
+      const cpfUsedForOrder = customerCpf;
 
       // Fecha imediatamente após salvar a OS para UX mais rápida.
       setFormData({ customer: '', device: '', defect: '', parts: '', labor: '', total: '', cost: '', warrantyDays: '90', devicePassword: '', devicePattern: '', deviceCheckLife: '', deviceCheckCharge: '', deviceCheckAccessories: '' });
@@ -251,7 +259,10 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
         void (async () => {
           try {
             await createCustomerDevice.mutateAsync(devicePayload);
-            await customerDevicesQuery.refetch();
+            // Refetch com o CPF da ordem (o form já foi limpo, então não usar customerDevicesQuery.refetch()).
+            if (cpfUsedForOrder) {
+              await utils.devices.getCustomerDevices.fetch({ customerCpf: cpfUsedForOrder });
+            }
           } catch (error: any) {
             console.warn('[OS][Device] Falha ao vincular aparelho em background:', error);
             toast.warning(error?.message || 'OS salva, mas não foi possível vincular o aparelho ao cliente.');
@@ -766,7 +777,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                       {warrantyTerms.length > 0 ? (
                         <div className="flex flex-wrap gap-3 p-3 rounded-xl bg-background/60 border border-border/50">
                           {warrantyTerms.map((term) => (
-                            <label key={term.id} className="flex items-start gap-2 cursor-pointer group max-w-full">
+                            <label key={term.id} className="flex items-center gap-2 cursor-pointer group">
                               <Checkbox
                                 checked={selectedWarrantyTerms.includes(term.id)}
                                 onCheckedChange={(checked) => {
@@ -776,9 +787,8 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                                 }}
                                 className="rounded border-border/60"
                               />
-                              <span className="text-xs text-foreground group-hover:text-primary transition-colors">
-                                <strong>{term.title}</strong>
-                                <span className="block text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{stripHtml(term.content)}</span>
+                              <span className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
+                                {term.title}
                               </span>
                             </label>
                           ))}
