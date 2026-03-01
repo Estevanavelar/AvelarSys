@@ -91,13 +91,13 @@ export default function SalesReport() {
 
   return (
     <ResponsiveLayout activeTab="dashboard">
-      <div className="space-y-8 max-w-7xl mx-auto pb-20">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-black text-foreground tracking-tight">Análise Financeira</h1>
-          <p className="text-muted-foreground text-lg">Controle de faturamento, taxas e rendimentos</p>
+      <div className="space-y-5 sm:space-y-6 lg:space-y-8 max-w-7xl w-full pb-4">
+        <div className="flex flex-col gap-1 sm:gap-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tight">Análise Financeira</h1>
+          <p className="text-muted-foreground text-sm sm:text-base lg:text-lg">Controle de faturamento, taxas e rendimentos</p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {(['week', 'month', 'year'] as const).map((range) => (
             <button
               key={range}

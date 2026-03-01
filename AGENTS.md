@@ -21,6 +21,29 @@ rule("Infraestrutura NGINX e DNS: Leitura automática de referência") {
   priority = "alta"
 }
 
+rule("Revise: Ativar Code Review ao pedir revisão") {
+  description = """
+  Quando o usuário pedir para revisar código (ex.: "revise", "revisa", "revise o código", "faça uma revisão"),
+  o agente deve ativar automaticamente a skill de code review e aplicar suas práticas.
+
+  O agente deve:
+  1. Ler a skill 'code-reviewer' em .agents/skills/code-reviewer/SKILL.md
+  2. Aplicar as instruções e capacidades da skill na revisão do código indicado
+  3. Seguir a abordagem estruturada: análise de contexto, ferramentas, revisão manual, segurança, performance, feedback estruturado
+
+  Frases de gatilho incluem (mas não se limitam a):
+  "revise", "revisa", "revisar", "review", "revise o código", "faça uma revisão",
+  "code review", "revisão de código", "analise o código", "revise isso"
+  """
+  when = [
+    "Usuário pede para revisar código, fazer revisão ou análise de código."
+  ]
+  action = [
+    "Ler a skill '/home/avelarsys/AvelarSys/.agents/skills/code-reviewer/SKILL.md' e aplicar suas instruções e capacidades na revisão do código solicitado."
+  ]
+  priority = "alta"
+}
+
 rule("Auto Sync: Commit e Push ao aprovar alterações") {
   description = """
   Quando o usuário aprovar, elogiar ou concordar com uma alteração de código realizada pelo agente,

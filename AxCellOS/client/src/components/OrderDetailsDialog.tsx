@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { 
-  X as XIcon, Phone as PhoneIcon, Mail as MailIcon, 
+  Phone as PhoneIcon, Mail as MailIcon, 
   Calendar as CalendarIcon, DollarSign as DollarIcon, 
   Smartphone as SmartphoneIcon, AlertCircle as AlertIcon, 
   Clock as ClockIcon, CheckCircle2 as CheckIcon, 
@@ -197,35 +197,35 @@ export default function OrderDetailsDialog({ order, open, onOpenChange }: OrderD
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-[97vw] max-w-[97vw] h-[97vh] max-h-[97vh] rounded-2xl overflow-y-auto p-0 gap-0">
-          <div className="flex flex-col h-full">
+        <DialogContent className="w-[97vw] max-w-[97vw] h-[97vh] max-h-[97vh] rounded-2xl overflow-y-auto p-0 gap-0 flex flex-col">
+          <div className="flex flex-col h-full min-h-0">
             {/* Header Fixo */}
-            <DialogHeader className="p-6 border-b sticky top-0 bg-background z-10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="text-4xl bg-muted w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner">
+            <DialogHeader className="p-4 sm:p-6 border-b sticky top-0 bg-background z-10 shrink-0">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                  <div className="text-2xl sm:text-4xl bg-muted w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-inner shrink-0">
                     {order.emoji}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <DialogTitle className="text-2xl font-bold">{order.orderNumber}</DialogTitle>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <DialogTitle className="text-lg sm:text-2xl font-bold truncate">{order.orderNumber}</DialogTitle>
                       <Badge variant="outline" className={`${config.color} border px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider`}>
                         {config.icon} {order.status}
                       </Badge>
                     </div>
-                    <DialogDescription className="text-lg font-medium text-foreground/80">
+                    <DialogDescription className="text-sm sm:text-lg font-medium text-foreground/80 truncate">
                       {customerNameDisplay}{customerCpfDisplay ? ` - CPF ${customerCpfDisplay}` : ''}
                     </DialogDescription>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap justify-end sm:justify-start">
                   {canAdvance && (
                     <Button
                       onClick={handleAdvanceStatus}
-                      className="gap-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                      className="gap-2 rounded-xl h-10 sm:h-auto bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-sm sm:text-base"
                     >
-                      <CheckIcon className="w-4 h-4" />
-                      Avançar para {statusLabels[nextStatus!]}
+                      <CheckIcon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">Avançar para {statusLabels[nextStatus!]}</span>
                     </Button>
                   )}
                   {order.status !== 'Entregue' && order.status !== 'Cancelado' && (
@@ -260,20 +260,12 @@ export default function OrderDetailsDialog({ order, open, onOpenChange }: OrderD
                       Fechar Pagamento
                     </Button>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onOpenChange(false)}
-                    className="rounded-full"
-                  >
-                    <XIcon className="w-5 h-5" />
-                  </Button>
                 </div>
               </div>
             </DialogHeader>
 
             {/* Conteúdo com Scroll */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-24">
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8 pb-24 custom-scrollbar">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
                 {/* Coluna 1 & 2: Detalhes do Serviço */}

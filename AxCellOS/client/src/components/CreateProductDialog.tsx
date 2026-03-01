@@ -145,25 +145,25 @@ export default function CreateProductDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] p-0 overflow-hidden border-none rounded-[32px] bg-background shadow-2xl">
+      <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] p-0 overflow-hidden border-none rounded-[32px] bg-background shadow-2xl flex flex-col">
         {/* Header Personalizado */}
-        <div className="bg-primary/5 px-8 pt-8 pb-6 border-b border-primary/10 relative">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="bg-primary/20 p-3 rounded-2xl text-primary">
-              <Package className="w-6 h-6" />
+        <div className="bg-primary/5 px-4 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 border-b border-primary/10 relative flex-shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 mb-2">
+            <div className="bg-primary/20 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl text-primary shrink-0">
+              <Package className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <DialogTitle className="text-2xl font-black tracking-tight text-foreground">
+            <div className="min-w-0">
+              <DialogTitle className="text-lg sm:text-2xl font-black tracking-tight text-foreground truncate">
                 Novo Produto
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground font-medium">
+              <DialogDescription className="text-muted-foreground font-medium text-xs sm:text-sm truncate">
                 Cadastre um novo item no seu inventário
               </DialogDescription>
             </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <form id="create-product-form" onSubmit={handleSubmit} className="p-4 sm:p-8 space-y-6 sm:space-y-8 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
           {/* SEÇÃO: APARÊNCIA */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-2">
@@ -172,7 +172,7 @@ export default function CreateProductDialog({
             </div>
             
             <Tabs value={activeMode} onValueChange={(v: any) => setActiveMode(v)} className="w-full">
-              <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 grid grid-cols-2 mb-4 h-14">
+              <TabsList className="bg-muted/50 p-1 rounded-xl sm:rounded-2xl border border-border/50 grid grid-cols-2 mb-4 h-12 sm:h-14">
                 <TabsTrigger 
                   value="image" 
                   className="rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-sm transition-all gap-2"
@@ -481,23 +481,21 @@ export default function CreateProductDialog({
           )}
         </form>
 
-        {/* Footer com Ações */}
-        <div className="p-8 border-t bg-muted/20 flex flex-col sm:flex-row gap-3">
+        {/* Footer com Ações - sempre visível */}
+        <div className="p-4 sm:p-8 border-t bg-muted/20 flex flex-col sm:flex-row gap-3 flex-shrink-0">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="flex-1 rounded-2xl h-14 font-bold text-base transition-all active:scale-95 border-border/50 hover:bg-background"
+            className="flex-1 rounded-xl sm:rounded-2xl h-12 sm:h-14 font-bold text-sm sm:text-base transition-all active:scale-95 border-border/50 hover:bg-background"
           >
             Cancelar
           </Button>
           <Button
-            onClick={(e) => {
-              e.preventDefault();
-              handleSubmit(e as any);
-            }}
+            type="submit"
+            form="create-product-form"
             disabled={isSubmitting}
-            className="flex-[2] gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl h-14 font-black text-lg shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+            className="flex-[2] gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl sm:rounded-2xl h-12 sm:h-14 font-black text-base sm:text-lg shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
           >
             {isSubmitting ? (
               <RefreshCw className="w-5 h-5 animate-spin" />

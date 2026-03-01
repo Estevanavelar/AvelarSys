@@ -6,7 +6,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { CreditCard, DollarSign, Wallet, Percent, CheckCircle2, X } from 'lucide-react';
+import { CreditCard, DollarSign, Wallet, Percent, CheckCircle2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { trpc } from '@/lib/trpc';
 
@@ -99,24 +99,24 @@ export default function PaymentDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] rounded-[32px] p-0 overflow-hidden border-none bg-background shadow-2xl flex flex-col">
-        <div className="bg-primary/5 p-6 border-b border-primary/10 shrink-0">
+        <div className="bg-primary/5 p-4 sm:p-6 border-b border-primary/10 shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/20 text-primary p-2 rounded-xl">
-                <DollarSign className="w-6 h-6" />
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="bg-primary/20 text-primary p-2 rounded-xl shrink-0">
+                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <DialogTitle className="text-xl font-black">Receber Pagamento</DialogTitle>
-                <DialogDescription className="font-bold text-primary/60">{orderNumber}</DialogDescription>
+              <div className="min-w-0">
+                <DialogTitle className="text-lg sm:text-xl font-black truncate">Receber Pagamento</DialogTitle>
+                <DialogDescription className="font-bold text-primary/60 text-sm truncate">{orderNumber}</DialogDescription>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-          <div className="text-center space-y-1 bg-muted/30 p-6 rounded-3xl border border-border/50 shadow-inner">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 custom-scrollbar">
+          <div className="text-center space-y-1 bg-muted/30 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-border/50 shadow-inner">
             <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Valor a Receber</p>
-            <h3 className="text-4xl font-black text-foreground">
+            <h3 className="text-2xl sm:text-4xl font-black text-foreground">
               R$ {(netInfo.charged || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </h3>
             {passFeeToCustomer && netInfo.percent > 0 && (
@@ -129,7 +129,7 @@ export default function PaymentDialog({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-xs font-black uppercase text-muted-foreground ml-1">Forma de Pagamento</Label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 {[
                   { id: 'cash', label: 'Dinheiro', icon: Wallet },
                   { id: 'pix', label: 'PIX', icon: CheckCircle2 },
@@ -139,7 +139,7 @@ export default function PaymentDialog({
                   <button
                     key={m.id}
                     onClick={() => setMethod(m.id as any)}
-                    className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all font-bold text-sm ${
+                    className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl border-2 transition-all font-bold text-xs sm:text-sm ${
                       method === m.id 
                         ? 'border-primary bg-primary/5 text-primary shadow-sm' 
                         : 'border-border hover:border-primary/30 text-muted-foreground'
@@ -198,11 +198,11 @@ export default function PaymentDialog({
           </div>
         </div>
 
-        <div className="p-6 bg-muted/20 border-t border-border flex gap-3 shrink-0">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 rounded-2xl h-14 font-bold">
+        <div className="p-4 sm:p-6 bg-muted/20 border-t border-border flex flex-col sm:flex-row gap-3 shrink-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 rounded-xl sm:rounded-2xl h-12 sm:h-14 font-bold text-sm sm:text-base">
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} className="flex-[2] rounded-2xl h-14 bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
+          <Button onClick={handleConfirm} className="flex-[2] rounded-xl sm:rounded-2xl h-12 sm:h-14 bg-primary text-primary-foreground font-black text-sm sm:text-base shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
             CONFIRMAR RECEBIMENTO
           </Button>
         </div>

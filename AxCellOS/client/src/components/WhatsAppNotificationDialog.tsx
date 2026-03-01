@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { X, MessageCircle, Send } from 'lucide-react';
+import { MessageCircle, Send } from 'lucide-react';
 
 interface WhatsAppNotificationDialogProps {
   open: boolean;
@@ -61,21 +61,11 @@ export default function WhatsAppNotificationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] rounded-2xl">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-2xl flex items-center gap-2">
-                <MessageCircle className="w-6 h-6 text-green-500" />
-                WhatsApp
-              </DialogTitle>
-              <DialogDescription>{customerName}</DialogDescription>
-            </div>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="p-2 hover:bg-muted rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <DialogTitle className="text-2xl flex items-center gap-2">
+            <MessageCircle className="w-6 h-6 text-green-500" />
+            WhatsApp
+          </DialogTitle>
+          <DialogDescription>{customerName}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

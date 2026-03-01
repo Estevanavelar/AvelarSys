@@ -358,41 +358,41 @@ export default function PDV() {
 
   return (
     <ResponsiveLayout activeTab="pdv">
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 w-full">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">🛍️ Ponto de Venda</h1>
-            <p className="text-muted-foreground mt-1">Gerencie suas vendas com facilidade</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">🛍️ Ponto de Venda</h1>
+            <p className="text-muted-foreground mt-1 text-sm">Gerencie suas vendas com facilidade</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               onClick={() => setShowSalesHistory(true)}
-              className="gap-2 rounded-full"
+              className="gap-1.5 sm:gap-2 flex-1 sm:flex-initial rounded-xl sm:rounded-full h-10 sm:h-11 text-sm"
             >
-              <History className="w-5 h-5" />
-              Histórico de Vendas
+              <History className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+              <span className="truncate">Histórico</span>
             </Button>
             <Button
               onClick={() => setShowCreateProduct(true)}
-              className="gap-2 bg-amber-600 hover:bg-amber-700 rounded-full"
+              className="gap-1.5 sm:gap-2 flex-1 sm:flex-initial bg-amber-600 hover:bg-amber-700 rounded-xl sm:rounded-full h-10 sm:h-11 text-sm"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
               Novo Produto
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Produtos */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-3 sm:space-y-4">
             {/* Busca */}
             <Input
               placeholder="🔍 Buscar produto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="rounded-xl h-12"
+              className="rounded-xl h-11 sm:h-12 text-sm sm:text-base"
             />
 
             {/* Grid de Produtos - Slider Version */}
@@ -407,7 +407,7 @@ export default function PDV() {
                 return (
                   <div 
                     key={pageIdx} 
-                    className="min-w-full grid grid-cols-2 sm:grid-cols-3 gap-3 snap-center px-1"
+                    className="min-w-full grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 snap-center px-0.5 sm:px-1"
                   >
                     {pageProducts.map((product: any) => (
                       <button
@@ -427,7 +427,7 @@ export default function PDV() {
                         onTouchStart={() => startLongPress(product)}
                         onTouchEnd={cancelLongPress}
                         onTouchCancel={cancelLongPress}
-                        className="bg-card border border-border rounded-2xl p-4 hover:border-amber-500 hover:shadow-lg transition-all select-none active:scale-95"
+                        className="bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:border-amber-500 hover:shadow-lg transition-all select-none active:scale-95"
                       >
                         {product.imageUrl || product.imageBase64 ? (
                           <img
@@ -481,7 +481,7 @@ export default function PDV() {
           </div>
 
           {/* Carrinho */}
-          <div className="bg-card border border-border rounded-2xl p-6 h-fit sticky top-6 space-y-4">
+          <div className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-6 h-fit lg:sticky lg:top-6 space-y-3 sm:space-y-4">
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-6 h-6 text-amber-600" />
               <h2 className="text-xl font-bold text-foreground">Carrinho</h2>
@@ -638,15 +638,15 @@ export default function PDV() {
 
       {/* Dialog Histórico de Vendas do PDV */}
       <Dialog open={showSalesHistory} onOpenChange={setShowSalesHistory}>
-        <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh]">
-          <DialogHeader>
-            <DialogTitle>🧾 Histórico de Vendas do PDV</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] flex flex-col p-4 sm:p-6">
+          <DialogHeader className="p-0">
+            <DialogTitle className="text-lg sm:text-xl truncate">🧾 Histórico de Vendas do PDV</DialogTitle>
+            <DialogDescription className="text-sm">
               Últimas 100 vendas registradas no PDV
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
+          <div className="space-y-3 flex-1 min-h-0 flex flex-col">
             <div className="flex items-center justify-between bg-muted/30 rounded-xl p-3">
               <div>
                 <p className="text-[10px] uppercase font-black text-muted-foreground">Total de vendas listadas</p>
@@ -658,7 +658,8 @@ export default function PDV() {
               </div>
             </div>
 
-            <div className="max-h-[58vh] overflow-auto rounded-xl border">
+            <div className="flex-1 min-h-0 max-h-[50vh] sm:max-h-[58vh] overflow-auto rounded-xl border custom-scrollbar">
+              <div className="overflow-x-auto min-w-0">
               {isLoadingSalesHistory ? (
                 <div className="p-6 text-sm text-muted-foreground">Carregando histórico...</div>
               ) : pdvSales.length === 0 ? (
@@ -689,14 +690,15 @@ export default function PDV() {
                   </tbody>
                 </table>
               )}
+              </div>
             </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => refetchSalesHistory()}>
+          <DialogFooter className="flex-col sm:flex-row gap-2 pt-4 shrink-0">
+            <Button variant="outline" onClick={() => refetchSalesHistory()} className="w-full sm:w-auto h-11 sm:h-10">
               Atualizar
             </Button>
-            <Button onClick={() => setShowSalesHistory(false)}>
+            <Button onClick={() => setShowSalesHistory(false)} className="w-full sm:w-auto h-11 sm:h-10">
               Fechar
             </Button>
           </DialogFooter>
@@ -714,16 +716,16 @@ export default function PDV() {
       <Dialog open={showQuickEdit} onOpenChange={setShowQuickEdit}>
         <DialogContent className="flex flex-col w-[97vw] max-w-[97vw] max-h-[97vh] p-0 overflow-hidden border-none rounded-[32px] bg-background shadow-2xl">
           {/* Header Personalizado */}
-          <div className="shrink-0 bg-amber-500/5 px-8 pt-8 pb-6 border-b border-amber-500/10 relative">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="bg-amber-500/20 p-3 rounded-2xl text-amber-600">
-                <Plus className="w-6 h-6" />
+          <div className="shrink-0 bg-amber-500/5 px-4 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 border-b border-amber-500/10 relative">
+            <div className="flex items-center gap-3 sm:gap-4 mb-2">
+              <div className="bg-amber-500/20 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl text-amber-600 shrink-0">
+                <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <DialogTitle className="text-2xl font-black tracking-tight text-foreground">
+              <div className="min-w-0">
+                <DialogTitle className="text-lg sm:text-2xl font-black tracking-tight text-foreground truncate">
                   Edição Rápida
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground font-medium">
+                <DialogDescription className="text-muted-foreground font-medium text-xs sm:text-sm truncate">
                   Altere as informações básicas do produto
                 </DialogDescription>
               </div>
@@ -731,7 +733,7 @@ export default function PDV() {
           </div>
 
           {quickEditProduct && (
-            <form onSubmit={handleQuickEditSave} className="flex-1 min-h-0 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+            <form onSubmit={handleQuickEditSave} className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-8 space-y-6 custom-scrollbar">
               {/* Escolha de Exibição */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -842,19 +844,19 @@ export default function PDV() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-border/50">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border/50">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setShowQuickEdit(false)}
-                  className="flex-1 rounded-2xl h-12 font-bold text-sm border-border/50"
+                  className="flex-1 rounded-xl sm:rounded-2xl h-12 font-bold text-sm border-border/50"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white rounded-2xl h-12 font-black text-sm shadow-lg shadow-amber-600/20 transition-all active:scale-95 disabled:opacity-50"
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white rounded-xl sm:rounded-2xl h-12 font-black text-sm shadow-lg shadow-amber-600/20 transition-all active:scale-95 disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
@@ -872,15 +874,15 @@ export default function PDV() {
       {/* Dialog Cupom Fiscal */}
       {lastSaleData && (
         <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
-          <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh]">
-            <DialogHeader>
-              <DialogTitle>🧾 Cupom Fiscal</DialogTitle>
-              <DialogDescription>
+          <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] flex flex-col p-4 sm:p-6">
+            <DialogHeader className="p-0">
+              <DialogTitle className="text-lg sm:text-xl truncate">🧾 Cupom Fiscal</DialogTitle>
+              <DialogDescription className="text-sm">
                 Escolha o tamanho do cupom para impressão
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
+            <div className="space-y-4 flex-1 min-h-0 overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setReceiptFormat('58mm')}
@@ -909,13 +911,14 @@ export default function PDV() {
               <ReceiptPrinter data={lastSaleData} format={receiptFormat} />
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex-col sm:flex-row gap-2 pt-4">
               <Button
                 variant="outline"
                 onClick={() => {
                   setShowReceipt(false);
                   setLastSaleData(null);
                 }}
+                className="w-full sm:w-auto h-11 sm:h-10"
               >
                 Fechar
               </Button>

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   Plus, Search, TrendingUp, Package as PackageIcon, 
   AlertTriangle, DollarSign, Calendar, FileText, ArrowRight,
-  Clock, CheckCircle2, ChevronRight, X as XIcon
+  CheckCircle2, ChevronRight, X as XIcon, PackageCheck
 } from 'lucide-react';
 import ResponsiveLayout from '@/components/ResponsiveLayout';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateOrder, setShowCreateOrder] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<ServiceOrder | null>(null);
-  const [filterMode, setFilterMode] = useState<'all' | 'warranty'>('all');
+  const [filterMode, setFilterMode] = useState<'all' | 'warranty' | 'ready'>('all');
   
   const { orders, getOrderById } = useOrders();
   const { products } = useProducts();
@@ -72,12 +72,7 @@ export default function Dashboard() {
 
     const lowStockCount = products.filter(p => p.quantity <= (p.minStock || 0)).length;
 
-    const warrantyEndingSoon = orders.filter(o => {
-      if (o.status !== 'Entregue' || !o.warrantyUntil) return false;
-      const diff = new Date(o.warrantyUntil).getTime() - new Date().getTime();
-      const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-      return days >= 0 && days <= 7;
-    }).length;
+    const readyForDelivery = orders.filter(o => o.status === 'Pronto').length;
 
     return {
       todayRevenue: todayNet,
@@ -89,7 +84,7 @@ export default function Dashboard() {
       lowStockCount,
       totalOrders: orders.length,
       activeOrders: orders.filter(o => o.status !== 'Entregue' && o.status !== 'Cancelado').length,
-      warrantyEndingSoon
+      readyForDelivery
     };
   }, [orders, products, customers, pdvSales]);
 
@@ -139,6 +134,10 @@ export default function Dashboard() {
         const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
         return matchesSearch && days >= 0 && days <= 7;
       }
+
+      if (filterMode === 'ready') {
+        return matchesSearch && order.status === 'Pronto';
+      }
       
       return matchesSearch;
     });
@@ -146,18 +145,18 @@ export default function Dashboard() {
 
   return (
     <ResponsiveLayout activeTab="dashboard">
-      <div className="space-y-8 max-w-7xl mx-auto pb-12">
+      <div className="space-y-5 sm:space-y-6 lg:space-y-8 w-full">
         
         {/* Header Principal */}
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-4xl font-black text-foreground tracking-tight">Painel de Controle</h1>
-            <p className="text-muted-foreground mt-2 text-lg">Visão geral da sua assistência técnica</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tight">Painel de Controle</h1>
+            <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base lg:text-lg">Visão geral da sua assistência técnica</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
             <Button
               onClick={() => setShowCreateOrder(true)}
-              className="gap-2 bg-primary text-primary-foreground hover:bg-accent hover:text-accent-foreground rounded-2xl h-14 px-8 font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
+              className="gap-2 flex-1 sm:flex-initial bg-primary text-primary-foreground hover:bg-accent hover:text-accent-foreground rounded-xl sm:rounded-2xl h-12 sm:h-14 px-6 sm:px-8 font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
             >
               <Plus className="w-5 h-5" />
               Nova Ordem
@@ -166,16 +165,16 @@ export default function Dashboard() {
         </div>
 
         {/* Grade de Métricas Reais */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Faturamento do Dia */}
-          <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-              <TrendingUp className="w-16 h-16 text-green-600" />
+          <div className="bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-2 sm:p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <TrendingUp className="w-10 h-10 sm:w-16 sm:h-16 text-green-600" />
             </div>
-            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Faturamento Hoje</p>
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Faturamento Hoje</p>
             <div className="flex items-baseline gap-1">
-              <span className="text-sm font-bold text-green-600">R$</span>
-              <h3 className="text-3xl font-black text-foreground">{(metrics.todayRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h3>
+              <span className="text-xs sm:text-sm font-bold text-green-600">R$</span>
+              <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground truncate">{(metrics.todayRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h3>
             </div>
             <div className="mt-4 flex items-center gap-2">
               <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Mês: R$ {(metrics.monthlyRevenue || 0).toLocaleString('pt-BR')}</span>
@@ -183,12 +182,12 @@ export default function Dashboard() {
           </div>
 
           {/* Estoque Baixo */}
-          <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-              <PackageIcon className="w-16 h-16 text-orange-600" />
+          <div className="bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-2 sm:p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <PackageIcon className="w-10 h-10 sm:w-16 sm:h-16 text-orange-600" />
             </div>
-            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Estoque Crítico</p>
-            <h3 className="text-3xl font-black text-foreground">{metrics.lowStockCount}</h3>
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Estoque Crítico</p>
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground">{metrics.lowStockCount}</h3>
             <p className="text-sm font-bold text-orange-600 mt-4 flex items-center gap-1">
               <AlertTriangle className="w-4 h-4" />
               Produtos com falta
@@ -196,33 +195,36 @@ export default function Dashboard() {
           </div>
 
           {/* Quantidade de Ordens */}
-          <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-              <FileText className="w-16 h-16 text-blue-600" />
+          <div className="bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-2 sm:p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <FileText className="w-10 h-10 sm:w-16 sm:h-16 text-blue-600" />
             </div>
-            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Quantidade de Ordens</p>
-            <h3 className="text-3xl font-black text-foreground">{metrics.totalOrders}</h3>
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Quantidade de Ordens</p>
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground">{metrics.totalOrders}</h3>
             <p className="text-sm font-bold text-blue-600 mt-4">{metrics.activeOrders} em andamento</p>
           </div>
 
-          {/* Garantias Acabando */}
-          <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-              <Clock className="w-16 h-16 text-purple-600" />
+          {/* Prontos para Entrega */}
+          <div
+            onClick={() => metrics.readyForDelivery > 0 && setFilterMode(filterMode === 'ready' ? 'all' : 'ready')}
+            className={`bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group ${metrics.readyForDelivery > 0 ? 'cursor-pointer' : ''}`}
+          >
+            <div className="absolute top-0 right-0 p-2 sm:p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <PackageCheck className="w-10 h-10 sm:w-16 sm:h-16 text-purple-600" />
             </div>
-            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Garantias Próximas</p>
-            <h3 className="text-3xl font-black text-foreground">{metrics.warrantyEndingSoon}</h3>
-            <p className="text-sm font-bold text-purple-600 mt-4 flex items-center gap-1 underline cursor-pointer">
-              Ver alertas <ArrowRight className="w-3 h-3" />
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-muted-foreground mb-1">Prontos para Entrega</p>
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-foreground">{metrics.readyForDelivery}</h3>
+            <p className="text-sm font-bold text-purple-600 mt-4 flex items-center gap-1 underline">
+              Aparelhos prontos aguardando retirada <ArrowRight className="w-3 h-3" />
             </p>
           </div>
         </div>
 
         {/* Gráfico e Relatórios */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="lg:col-span-2 bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-primary" />
                 Desempenho Semanal
               </h2>
@@ -233,7 +235,7 @@ export default function Dashboard() {
                 </Button>
               </div>
             </div>
-            <div className="h-[320px] w-full">
+            <div className="h-[260px] sm:h-[300px] lg:h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 16, right: 16, left: 16, bottom: 8 }} barCategoryGap="20%">
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -282,13 +284,13 @@ export default function Dashboard() {
 
           {/* Ações e Relatórios Rápidos */}
           <div className="space-y-4">
-            <div className="bg-card border border-border rounded-3xl p-6 shadow-sm h-full flex flex-col">
-              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+            <div className="bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm h-full flex flex-col">
+              <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 sm:mb-6 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary" />
                 Relatórios
               </h2>
               <div className="space-y-3 flex-1">
-                <Button variant="outline" className="w-full justify-between h-16 rounded-2xl border-dashed hover:bg-primary/5 hover:border-primary transition-all group">
+                <Button variant="outline" className="w-full justify-between h-14 sm:h-16 rounded-xl sm:rounded-2xl border-dashed hover:bg-primary/5 hover:border-primary transition-all group">
                   <div className="flex items-center gap-3">
                     <div className="bg-green-100 p-2 rounded-xl text-green-600 group-hover:scale-110 transition-transform">
                       <DollarSign className="w-5 h-5" />
@@ -301,7 +303,7 @@ export default function Dashboard() {
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </Button>
 
-                <Button variant="outline" className="w-full justify-between h-16 rounded-2xl border-dashed hover:bg-primary/5 hover:border-primary transition-all group">
+                <Button variant="outline" className="w-full justify-between h-14 sm:h-16 rounded-xl sm:rounded-2xl border-dashed hover:bg-primary/5 hover:border-primary transition-all group">
                   <div className="flex items-center gap-3">
                     <div className="bg-blue-100 p-2 rounded-xl text-blue-600 group-hover:scale-110 transition-transform">
                       <FileText className="w-5 h-5" />
@@ -314,7 +316,7 @@ export default function Dashboard() {
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </Button>
 
-                <Button variant="outline" className="w-full justify-between h-16 rounded-2xl border-dashed hover:bg-primary/5 hover:border-primary transition-all group">
+                <Button variant="outline" className="w-full justify-between h-14 sm:h-16 rounded-xl sm:rounded-2xl border-dashed hover:bg-primary/5 hover:border-primary transition-all group">
                   <div className="flex items-center gap-3">
                     <div className="bg-orange-100 p-2 rounded-xl text-orange-600 group-hover:scale-110 transition-transform">
                       <PackageIcon className="w-5 h-5" />
@@ -339,13 +341,18 @@ export default function Dashboard() {
         </div>
 
         {/* Seção de Ordens Recentes */}
-        <div className="space-y-6 pt-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-2xl font-black text-foreground tracking-tight flex items-center gap-3">
-              {filterMode === 'warranty' ? 'Alertas de Garantia' : 'Ordens de Serviço'}
+        <div className="space-y-4 sm:space-y-6 pt-2 sm:pt-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight flex items-center gap-2 sm:gap-3 flex-wrap">
+              {filterMode === 'warranty' ? 'Alertas de Garantia' : filterMode === 'ready' ? 'Prontos para Entrega' : 'Ordens de Serviço'}
               {filterMode === 'warranty' && (
                 <BadgeIcon onClick={() => setFilterMode('all')} className="bg-purple-100 text-purple-700 hover:bg-purple-200 cursor-pointer border-none px-3 py-1">
                   Filtrado por garantia <XIcon className="w-3 h-3 ml-2" />
+                </BadgeIcon>
+              )}
+              {filterMode === 'ready' && (
+                <BadgeIcon onClick={() => setFilterMode('all')} className="bg-purple-100 text-purple-700 hover:bg-purple-200 cursor-pointer border-none px-3 py-1">
+                  Prontos <XIcon className="w-3 h-3 ml-2" />
                 </BadgeIcon>
               )}
             </h2>
@@ -361,7 +368,7 @@ export default function Dashboard() {
           </div>
 
           {filteredOrders.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredOrders.map((order) => (
                 <ServiceOrderCard 
                   key={order.id} 
@@ -371,7 +378,7 @@ export default function Dashboard() {
               ))}
             </div>
           ) : (
-            <div className="bg-muted/20 border border-dashed border-border rounded-[2rem] p-12 text-center">
+            <div className="bg-muted/20 border border-dashed border-border rounded-2xl sm:rounded-[2rem] p-8 sm:p-12 text-center">
               <div className="bg-muted/50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">🔍</div>
               <p className="text-muted-foreground font-medium text-lg">Nenhuma ordem encontrada para sua busca.</p>
             </div>

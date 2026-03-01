@@ -1,7 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
 
 const STATUS_ORDER: Array<'NA BANCADA' | 'Em Reparo' | 'Pronto' | 'Entregue'> = ['NA BANCADA', 'Em Reparo', 'Pronto', 'Entregue'];
 
@@ -54,27 +53,19 @@ export default function EditStatusDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] rounded-2xl">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-2xl">📊 Alterar Status</DialogTitle>
-              <DialogDescription>{orderNumber}</DialogDescription>
-            </div>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="p-2 hover:bg-muted rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] rounded-2xl p-4 sm:p-6">
+        <DialogHeader className="p-0">
+          <div className="min-w-0">
+            <DialogTitle className="text-lg sm:text-2xl truncate">📊 Alterar Status</DialogTitle>
+            <DialogDescription className="truncate">{orderNumber}</DialogDescription>
           </div>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4 pt-2">
           {nextStatus && (
             <Button
               onClick={handleAdvance}
-              className="w-full rounded-xl h-14 bg-primary text-primary-foreground font-bold text-lg gap-2"
+              className="w-full rounded-xl h-12 sm:h-14 bg-primary text-primary-foreground font-bold text-base sm:text-lg gap-2"
             >
               <span>{statusLabels[nextStatus]?.emoji}</span>
               Avançar para {statusLabels[nextStatus]?.label}

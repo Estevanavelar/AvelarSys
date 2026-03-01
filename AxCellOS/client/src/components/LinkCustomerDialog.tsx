@@ -99,29 +99,29 @@ export function LinkCustomerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] p-0 overflow-hidden border-none rounded-[32px] bg-background shadow-2xl flex flex-col">
         {/* Header Personalizado */}
-        <div className="bg-primary/5 px-8 pt-8 pb-6 border-b border-primary/10 relative shrink-0">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="bg-primary/20 p-3 rounded-2xl text-primary">
-              <LinkIcon className="w-6 h-6" />
+        <div className="bg-primary/5 px-4 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 border-b border-primary/10 relative shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 mb-2">
+            <div className="bg-primary/20 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl text-primary shrink-0">
+              <LinkIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <DialogTitle className="text-2xl font-black tracking-tight text-foreground">
+            <div className="min-w-0">
+              <DialogTitle className="text-lg sm:text-2xl font-black tracking-tight text-foreground truncate">
                 Vincular Cliente
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground font-medium">
+              <DialogDescription className="text-muted-foreground font-medium text-xs sm:text-sm truncate">
                 Identifique o cliente para finalizar a venda
               </DialogDescription>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8 custom-scrollbar">
           {/* Busca por CPF */}
           <div className="space-y-3">
             <Label htmlFor="cpf" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
               Buscar por CPF
             </Label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Input
                   id="cpf"
@@ -129,7 +129,7 @@ export function LinkCustomerDialog({
                   value={cpf}
                   onChange={handleCPFChange}
                   maxLength={14}
-                  className="rounded-xl h-14 pl-12 font-bold bg-muted/30 focus:bg-background transition-all"
+                  className="rounded-xl h-12 sm:h-14 pl-10 sm:pl-12 font-bold bg-muted/30 focus:bg-background transition-all"
                 />
                 <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               </div>
@@ -137,7 +137,7 @@ export function LinkCustomerDialog({
                 onClick={handleSearchCustomer}
                 variant="secondary"
                 disabled={!cpf || isSearching}
-                className="rounded-xl h-14 px-6 border border-border/50 hover:bg-primary/10 hover:text-primary transition-all font-bold"
+                className="rounded-xl h-12 sm:h-14 px-4 sm:px-6 border border-border/50 hover:bg-primary/10 hover:text-primary transition-all font-bold"
               >
                 {isSearching ? '...' : <SearchIcon className="w-5 h-5" />}
               </Button>
@@ -184,7 +184,7 @@ export function LinkCustomerDialog({
         </div>
 
         {/* Footer com Ações */}
-        <div className="p-8 border-t bg-muted/20 flex gap-3 shrink-0">
+        <div className="p-4 sm:p-8 border-t bg-muted/20 flex flex-col sm:flex-row gap-3 shrink-0">
           <Button
             type="button"
             variant="outline"
@@ -192,13 +192,13 @@ export function LinkCustomerDialog({
               onConfirm('', '');
               handleClose();
             }}
-            className="flex-1 rounded-2xl h-14 font-bold text-base transition-all active:scale-95 border-border/50 hover:bg-background"
+            className="flex-1 rounded-xl sm:rounded-2xl h-12 sm:h-14 font-bold text-sm sm:text-base transition-all active:scale-95 border-border/50 hover:bg-background"
           >
             Pular
           </Button>
           <Button
             onClick={handleConfirm}
-            className="flex-[2] gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl h-14 font-black text-lg shadow-xl shadow-primary/20 transition-all active:scale-95"
+            className="flex-[2] gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl sm:rounded-2xl h-12 sm:h-14 font-black text-base sm:text-lg shadow-xl shadow-primary/20 transition-all active:scale-95"
           >
             <CheckIcon className="w-5 h-5" />
             VINCULAR CLIENTE

@@ -287,39 +287,39 @@ export default function Settings() {
 
   return (
     <ResponsiveLayout activeTab="configuracoes">
-      <div className="space-y-8 max-w-4xl mx-auto pb-20">
+      <div className="space-y-5 sm:space-y-6 lg:space-y-8 max-w-4xl w-full pb-4">
         <div>
-          <h1 className="text-4xl font-black text-foreground tracking-tight">Configurações</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Gerencie sua conta e taxas do sistema</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tight">Configurações</h1>
+          <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base lg:text-lg">Gerencie sua conta e taxas do sistema</p>
         </div>
 
-        <Tabs defaultValue="perfil" className="space-y-6">
-          <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 inline-flex min-w-full sm:min-w-0">
-              <TabsTrigger value="perfil" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-sm transition-all whitespace-nowrap">
+        <Tabs defaultValue="perfil" className="space-y-4 sm:space-y-6">
+          <div className="overflow-x-auto pb-2 -mx-1 px-1 sm:mx-0 sm:px-0 scrollbar-hide">
+            <TabsList className="bg-muted/50 p-1 rounded-xl sm:rounded-2xl border border-border/50 inline-flex min-w-full sm:min-w-0">
+              <TabsTrigger value="perfil" className="rounded-lg sm:rounded-xl px-4 sm:px-6 py-2 sm:py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-xs sm:text-sm transition-all whitespace-nowrap shrink-0">
                 Perfil
               </TabsTrigger>
-              <TabsTrigger value="empresa" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-sm transition-all whitespace-nowrap">
+              <TabsTrigger value="empresa" className="rounded-lg sm:rounded-xl px-4 sm:px-6 py-2 sm:py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-xs sm:text-sm transition-all whitespace-nowrap shrink-0">
                 Empresa
               </TabsTrigger>
-              <TabsTrigger value="taxas" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-sm transition-all whitespace-nowrap">
+              <TabsTrigger value="taxas" className="rounded-lg sm:rounded-xl px-4 sm:px-6 py-2 sm:py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-xs sm:text-sm transition-all whitespace-nowrap shrink-0">
                 Taxas Maquininha
               </TabsTrigger>
-              <TabsTrigger value="notificacoes" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-sm transition-all whitespace-nowrap">
+              <TabsTrigger value="notificacoes" className="rounded-lg sm:rounded-xl px-4 sm:px-6 py-2 sm:py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-xs sm:text-sm transition-all whitespace-nowrap shrink-0">
                 Notificacoes
               </TabsTrigger>
-              <TabsTrigger value="termos" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-sm transition-all whitespace-nowrap">
+              <TabsTrigger value="termos" className="rounded-lg sm:rounded-xl px-4 sm:px-6 py-2 sm:py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-xs sm:text-sm transition-all whitespace-nowrap shrink-0">
                 Termos
               </TabsTrigger>
-              <TabsTrigger value="seguranca" className="rounded-xl px-6 py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-sm transition-all whitespace-nowrap">
+              <TabsTrigger value="seguranca" className="rounded-lg sm:rounded-xl px-4 sm:px-6 py-2 sm:py-2.5 data-[state=active]:bg-background data-[state=active]:shadow-sm font-bold text-xs sm:text-sm transition-all whitespace-nowrap shrink-0">
                 Seguranca
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="perfil" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-            <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
-              <div className="flex items-center justify-between mb-8">
+          <TabsContent value="perfil" className="space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-bottom-2">
+            <div className="bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm">
+              <div className="flex items-center justify-between mb-4 sm:mb-8">
                 <div>
                   <h2 className="text-2xl font-black text-foreground">Dados do Usuário</h2>
                   <p className="text-muted-foreground text-sm">Informações da sua conta</p>
@@ -354,9 +354,9 @@ export default function Settings() {
             </div>
           </TabsContent>
 
-          <TabsContent value="empresa" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-            <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
-              <div className="flex items-center justify-between mb-8">
+          <TabsContent value="empresa" className="space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-bottom-2">
+            <div className="bg-card border border-border rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm">
+              <div className="flex items-center justify-between mb-4 sm:mb-8">
                 <div>
                   <h2 className="text-2xl font-black text-foreground">Perfil da Empresa</h2>
                   <p className="text-muted-foreground text-sm">Dados que aparecerão em orçamentos e comprovantes</p>

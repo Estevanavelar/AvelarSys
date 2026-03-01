@@ -56,7 +56,7 @@ export default function ServiceOrderCard({ order, onClick }: ServiceOrderCardPro
   return (
     <button
       onClick={() => onClick?.(order)}
-      className="w-full bg-card border border-border rounded-2xl p-4 hover:shadow-lg transition-all hover:border-primary text-left group active:scale-[0.98]"
+      className="w-full bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:shadow-lg transition-all hover:border-primary text-left group active:scale-[0.98]"
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">

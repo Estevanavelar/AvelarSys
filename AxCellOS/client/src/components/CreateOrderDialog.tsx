@@ -850,23 +850,23 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
       {/* Sub-Dialog: Novo Cliente */}
       <Dialog open={customerDialogOpen} onOpenChange={setCustomerDialogOpen}>
         <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] p-0 overflow-hidden border-none rounded-[32px] bg-background shadow-2xl flex flex-col">
-          <div className="bg-primary/5 px-8 pt-8 pb-6 border-b border-primary/10 relative shrink-0">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="bg-primary/20 p-3 rounded-2xl text-primary">
-                <UserIcon className="w-6 h-6" />
+          <div className="bg-primary/5 px-4 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 border-b border-primary/10 relative shrink-0">
+            <div className="flex items-center gap-3 sm:gap-4 mb-2">
+              <div className="bg-primary/20 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl text-primary shrink-0">
+                <UserIcon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <DialogTitle className="text-2xl font-black tracking-tight text-foreground">
+              <div className="min-w-0">
+                <DialogTitle className="text-lg sm:text-2xl font-black tracking-tight text-foreground truncate">
                   Novo Cliente
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground font-medium">
+                <DialogDescription className="text-muted-foreground font-medium text-xs sm:text-sm truncate">
                   Cadastro rápido para vincular à OS
                 </DialogDescription>
               </div>
             </div>
           </div>
 
-          <form onSubmit={handleCreateCustomer} className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+          <form onSubmit={handleCreateCustomer} className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 custom-scrollbar">
             <div className="space-y-2">
               <Label htmlFor="quick-customer-name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Nome Completo</Label>
               <Input
@@ -908,12 +908,12 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
             </div>
           </form>
 
-          <div className="p-8 border-t bg-muted/20 flex gap-3 shrink-0">
+          <div className="p-4 sm:p-8 border-t bg-muted/20 flex flex-col sm:flex-row gap-3 shrink-0">
             <Button
               type="button"
               variant="outline"
               onClick={() => setCustomerDialogOpen(false)}
-              className="flex-1 rounded-2xl h-12 font-bold"
+              className="flex-1 rounded-xl sm:rounded-2xl h-12 font-bold"
             >
               Cancelar
             </Button>
@@ -923,7 +923,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                 void handleCreateCustomer(e as any);
               }}
               disabled={createFinalCustomer.isPending}
-              className="flex-[2] bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl h-12 font-black shadow-lg shadow-primary/20 transition-all active:scale-95"
+              className="flex-[2] bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl sm:rounded-2xl h-12 font-black shadow-lg shadow-primary/20 transition-all active:scale-95"
             >
               {createFinalCustomer.isPending ? 'SALVANDO...' : 'SALVAR CLIENTE'}
             </Button>
@@ -934,23 +934,23 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
       {/* Sub-Dialog: Novo Aparelho */}
       <Dialog open={deviceDialogOpen} onOpenChange={setDeviceDialogOpen}>
         <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] p-0 overflow-hidden border-none rounded-[32px] bg-background shadow-2xl flex flex-col">
-          <div className="bg-primary/5 px-8 pt-8 pb-6 border-b border-primary/10 relative shrink-0">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="bg-primary/20 p-3 rounded-2xl text-primary">
-                <SmartphoneIcon className="w-6 h-6" />
+          <div className="bg-primary/5 px-4 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 border-b border-primary/10 relative shrink-0">
+            <div className="flex items-center gap-3 sm:gap-4 mb-2">
+              <div className="bg-primary/20 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl text-primary shrink-0">
+                <SmartphoneIcon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div>
-                <DialogTitle className="text-2xl font-black tracking-tight text-foreground">
+              <div className="min-w-0">
+                <DialogTitle className="text-lg sm:text-2xl font-black tracking-tight text-foreground truncate">
                   Novo Aparelho
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground font-medium">
+                <DialogDescription className="text-muted-foreground font-medium text-xs sm:text-sm truncate">
                   Identifique o equipamento do cliente
                 </DialogDescription>
               </div>
             </div>
           </div>
 
-          <form onSubmit={handleCreateDevice} className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+          <form onSubmit={handleCreateDevice} className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 custom-scrollbar">
             <div className="space-y-2">
               <Label htmlFor="device-customer" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">CPF do Cliente</Label>
               <Input
@@ -964,7 +964,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="device-brand" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Marca</Label>
                 <Input
@@ -991,12 +991,12 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
             </div>
           </form>
 
-          <div className="p-8 border-t bg-muted/20 flex gap-3 shrink-0">
+          <div className="p-4 sm:p-8 border-t bg-muted/20 flex flex-col sm:flex-row gap-3 shrink-0">
             <Button
               type="button"
               variant="outline"
               onClick={() => setDeviceDialogOpen(false)}
-              className="flex-1 rounded-2xl h-12 font-bold"
+              className="flex-1 rounded-xl sm:rounded-2xl h-12 font-bold"
             >
               Cancelar
             </Button>
@@ -1006,7 +1006,7 @@ export default function CreateOrderDialog({ open, onOpenChange }: CreateOrderDia
                 void handleCreateDevice(e as any);
               }}
               disabled={createCustomerDevice.isPending}
-              className="flex-[2] bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl h-12 font-black shadow-lg shadow-primary/20 transition-all active:scale-95"
+              className="flex-[2] bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl sm:rounded-2xl h-12 font-black shadow-lg shadow-primary/20 transition-all active:scale-95"
             >
               {createCustomerDevice.isPending ? 'SALVANDO...' : 'SALVAR APARELHO'}
             </Button>

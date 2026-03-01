@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { X } from 'lucide-react';
 
 interface CreateCustomerDialogProps {
   open: boolean;
@@ -28,18 +27,8 @@ export default function CreateCustomerDialog({ open, onOpenChange }: CreateCusto
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[97vw] max-w-[97vw] max-h-[97vh] rounded-2xl">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-2xl">👤 Novo Cliente</DialogTitle>
-              <DialogDescription>Cadastre um novo cliente rapidamente</DialogDescription>
-            </div>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="p-2 hover:bg-muted rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <DialogTitle className="text-2xl">👤 Novo Cliente</DialogTitle>
+          <DialogDescription>Cadastre um novo cliente rapidamente</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

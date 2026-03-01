@@ -34,16 +34,16 @@ export default function Orders() {
 
   return (
     <ResponsiveLayout activeTab="ordens">
-      <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="space-y-4 sm:space-y-6 w-full">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Ordens de Serviço</h1>
-            <p className="text-muted-foreground mt-1">Total: {orders.length} ordens</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Ordens de Serviço</h1>
+            <p className="text-muted-foreground mt-1 text-sm">Total: {orders.length} ordens</p>
           </div>
           <Button
             onClick={() => setShowCreateOrder(true)}
-            className="gap-2 bg-primary text-primary-foreground hover:bg-accent hover:text-accent-foreground rounded-full h-12 px-6 font-semibold"
+            className="gap-2 w-full sm:w-auto bg-primary text-primary-foreground hover:bg-accent hover:text-accent-foreground rounded-xl sm:rounded-full h-11 sm:h-12 px-5 sm:px-6 font-semibold"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Nova Ordem</span>
@@ -53,22 +53,22 @@ export default function Orders() {
 
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
           <Input
             placeholder="Buscar por número da OS ou cliente..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 rounded-full h-12"
+            className="pl-10 sm:pl-12 rounded-xl sm:rounded-full h-11 sm:h-12 text-sm sm:text-base"
           />
         </div>
 
         {/* Status Filter */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
           {statuses.map((status) => (
             <button
               key={status.id}
               onClick={() => setStatusFilter(status.id as any)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-all ${
+              className={`px-3 sm:px-4 py-2 rounded-full whitespace-nowrap font-medium text-sm sm:text-base transition-all shrink-0 ${
                 statusFilter === status.id
                   ? 'bg-primary text-primary-foreground shadow-md'
                   : 'bg-card border border-border text-foreground hover:border-primary'
@@ -80,7 +80,7 @@ export default function Orders() {
         </div>
 
         {/* Orders List */}
-        <div className="space-y-3">
+        <div className="space-y-3 sm:space-y-4">
           {filteredOrders.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filteredOrders.map((order) => (
@@ -92,7 +92,7 @@ export default function Orders() {
               ))}
             </div>
           ) : (
-            <div className="bg-card border border-border rounded-2xl p-8 text-center">
+            <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 text-center">
               <Filter className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
               <p className="text-muted-foreground">Nenhuma ordem encontrada</p>
               <p className="text-sm text-muted-foreground mt-2">Tente ajustar seus filtros</p>

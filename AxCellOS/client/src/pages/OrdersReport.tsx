@@ -69,16 +69,16 @@ export default function OrdersReport() {
 
   return (
     <ResponsiveLayout activeTab="ordens">
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6 w-full">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">🔧 Relatório de Ordens de Serviço</h1>
-          <p className="text-muted-foreground mt-1">Análise de reparos e desempenho</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">🔧 Relatório de Ordens de Serviço</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Análise de reparos e desempenho</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="p-6 space-y-2">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="p-4 sm:p-6 space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">Total de Ordens</p>
               <AlertCircle className="w-5 h-5 text-blue-500" />
@@ -87,27 +87,27 @@ export default function OrdersReport() {
             <p className="text-xs text-blue-600">Últimos 7 dias</p>
           </Card>
 
-          <Card className="p-6 space-y-2">
+          <Card className="p-4 sm:p-6 space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Concluídas</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Concluídas</p>
               <CheckCircle2 className="w-5 h-5 text-green-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{stats.completedOrders}</p>
             <p className="text-xs text-green-600">{stats.completionRate.toFixed(1)}% de conclusão</p>
           </Card>
 
-          <Card className="p-6 space-y-2">
+          <Card className="p-4 sm:p-6 space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Pendentes</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Pendentes</p>
               <Clock className="w-5 h-5 text-amber-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{stats.pendingOrders}</p>
             <p className="text-xs text-amber-600">Aguardando conclusão</p>
           </Card>
 
-          <Card className="p-6 space-y-2">
+          <Card className="p-4 sm:p-6 space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Tempo Médio</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Tempo Médio</p>
               <TrendingUp className="w-5 h-5 text-purple-500" />
             </div>
             <p className="text-2xl font-bold text-foreground">{stats.avgRepairTime} dias</p>
@@ -116,9 +116,9 @@ export default function OrdersReport() {
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Ordens por Dia */}
-          <Card className="p-6">
+          <Card className="p-4 sm:p-6">
             <h2 className="text-lg font-semibold mb-4">Ordens por Dia</h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={ORDERS_DATA}>
